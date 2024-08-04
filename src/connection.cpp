@@ -18,8 +18,14 @@ void Connection::readRequest()
     do {
         read_count = read(socket, buff, buff_size);
         if (read_count == -1) {
-            throw std::runtime_error(std::string("read() error:") +
-                                     std::strerror(errno));
+            if (errno == EAGAIN) {
+                std::cout << "[connection] eagain" << std::endl;
+                break;
+            }
+            else {
+                throw std::runtime_error(std::string("read() error: ") +
+                                         std::strerror(errno));
+            }
         }
         body.write(buff, read_count);
         std::cout << "[connection] read_count: " << read_count
@@ -27,6 +33,9 @@ void Connection::readRequest()
         std::cout.write(buff, read_count);
         std::cout << std::endl;
     } while (read_count > 0);
+    if (read_count == 0) {
+        close(socket);
+    }
 
     requests.push(Request{body.str()});
     std::cout << "[connection] create request" << std::endl;
@@ -43,6 +52,10 @@ void Connection::solveRequest()
     requests.pop();
     const std::string& body = request.getBody();
     std::cout << "[connection] start write body: " << body << std::endl;
-    write(socket, body.c_str(), body.size());
+    int writed = write(socket, body.c_str(), body.size());
+    if (writed == -1) {
+        throw std::runtime_error(std::string("write() error: ") +
+                                 std::strerror(errno));
+    }
     std::cout << "[connection] write done" << std::endl;
 }
