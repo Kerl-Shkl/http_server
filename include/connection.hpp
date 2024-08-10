@@ -10,6 +10,7 @@ public:
     explicit Connection(int sock);
     void readRequest();
     void solveRequest();
+    bool writeReady() const noexcept;
 
 private:
     std::queue<Request> requests;

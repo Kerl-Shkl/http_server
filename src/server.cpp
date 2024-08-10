@@ -33,11 +33,29 @@ void Server::run()
             addConnection();
         }
         else {
-            std::cout << "[server] read request" << std::endl;
+            std::cout << "[server] io socket waited" << std::endl;
             auto it = connections.find(event.data.fd);
-            it->second.readRequest();
-            // replace with add to epoll for write
-            it->second.solveRequest();
+            Connection& connection = it->second;
+            if (event.events & EPOLLIN) {
+                std::cout << "[server] io socket read ready" << std::endl;
+                connection.readRequest();
+            }
+            if (event.events & EPOLLOUT) {
+                std::cout << "[server] io socket write ready" << std::endl;
+                connection.solveRequest();
+            }
+            if (connection.writeReady()) {
+                epoll_event event_with_write{.events = EPOLLOUT | EPOLLIN,
+                                             .data = {.fd = event.data.fd}};
+                epoll_ctl(epoll_fd, EPOLL_CTL_MOD, event_with_write.data.fd,
+                          &event_with_write);
+            }
+            else {
+                epoll_event event_with_write{.events = EPOLLIN,
+                                             .data = {.fd = event.data.fd}};
+                epoll_ctl(epoll_fd, EPOLL_CTL_MOD, event_with_write.data.fd,
+                          &event_with_write);
+            }
         }
     }
 }

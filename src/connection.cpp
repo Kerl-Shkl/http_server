@@ -12,7 +12,7 @@ Connection::Connection(int sock)
 void Connection::readRequest()
 {
     constexpr int buff_size = 256;
-    char buff[256];
+    char buff[buff_size];
     std::stringstream body;
     int read_count;
     do {
@@ -31,7 +31,9 @@ void Connection::readRequest()
         std::cout << "[connection] read_count: " << read_count
                   << " buffer read:";
         std::cout.write(buff, read_count);
-        std::cout << std::endl;
+        if (buff[read_count - 1] != '\n') {
+            std::cout << std::endl;
+        }
     } while (read_count > 0);
     if (read_count == 0) {
         close(socket);
@@ -51,11 +53,19 @@ void Connection::solveRequest()
     Request request = std::move(requests.front());
     requests.pop();
     const std::string& body = request.getBody();
-    std::cout << "[connection] start write body: " << body << std::endl;
+    std::cout << "[connection] start write body: " << body;
+    if (body.back() != '\n') {
+        std::cout << std::endl;
+    }
     int writed = write(socket, body.c_str(), body.size());
     if (writed == -1) {
         throw std::runtime_error(std::string("write() error: ") +
                                  std::strerror(errno));
     }
     std::cout << "[connection] write done" << std::endl;
+}
+
+bool Connection::writeReady() const noexcept
+{
+    return !requests.empty();
 }
