@@ -38,10 +38,11 @@ void Server::run()
             if (event.events & EPOLLIN) {
                 log.log("io socket read ready");
                 connection.readRequest();
+                connection.solveRequest();
             }
             if (event.events & EPOLLOUT) {
                 log.log("io socket write ready");
-                connection.solveRequest();
+                connection.writeRequest();
             }
             if (connection.writeReady()) {
                 epoll_event event_with_write{.events = EPOLLOUT | EPOLLIN,

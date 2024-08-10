@@ -34,20 +34,20 @@ void Connection::readRequest()
     if (read_count == 0) {
         close(socket);
     }
-    requests.push(Request{body.str()});
+    actual_request.complete(body.str());
     log.log("create request");
 }
 
 void Connection::solveRequest()
 {
-    if (requests.empty()) {
-        log.log("request queue is empty");
-        return;
-    }
-    log.log("start solve request");
-    Request request = std::move(requests.front());
-    requests.pop();
-    const std::string& body = request.getBody();
+    response.complete(actual_request.getBody());
+    log.log("request solved");
+    actual_request.reset();
+}
+
+void Connection::writeRequest()
+{
+    const std::string& body = response.getBody();
     log.log("start write body", body);
     int writed = write(socket, body.c_str(), body.size());
     if (writed == -1) {
@@ -55,9 +55,10 @@ void Connection::solveRequest()
                                  std::strerror(errno));
     }
     log.log("write done");
+    response.reset();
 }
 
 bool Connection::writeReady() const noexcept
 {
-    return !requests.empty();
+    return response.isComplete();
 }
