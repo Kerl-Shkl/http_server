@@ -19,7 +19,7 @@ Server::Server()
 void Server::run()
 {
     for (;;) {
-        std::cout << "[server] start epoll wait" << std::endl;
+        log.log("start epoll wait");
         if (epoll_wait(epoll_fd, &event, 1, -1) < 1) {
             if (errno == EINTR) {
                 continue;
@@ -27,21 +27,20 @@ void Server::run()
             throw std::runtime_error(std::string("epoll_wait() error: ") +
                                      std::strerror(errno));
         }
-        std::cout << "[server] epoll waited" << std::endl;
         if (event.data.fd == listen_sd) {
-            std::cout << "[server] listen socket waited" << std::endl;
+            log.log("listen socket waited");
             addConnection();
         }
         else {
-            std::cout << "[server] io socket waited" << std::endl;
+            log.log("io socket waited");
             auto it = connections.find(event.data.fd);
             Connection& connection = it->second;
             if (event.events & EPOLLIN) {
-                std::cout << "[server] io socket read ready" << std::endl;
+                log.log("io socket read ready");
                 connection.readRequest();
             }
             if (event.events & EPOLLOUT) {
-                std::cout << "[server] io socket write ready" << std::endl;
+                log.log("io socket write ready");
                 connection.solveRequest();
             }
             if (connection.writeReady()) {
@@ -70,7 +69,7 @@ int Server::acceptConnection()
         throw std::runtime_error(std::string("accept() error: ") +
                                  std::strerror(errno));
     }
-    std::cout << "[server] connection accepted" << std::endl;
+    log.log("connection accepted");
 
     int flags = fcntl(socket, F_GETFL);
     fcntl(socket, F_SETFL, flags | O_NONBLOCK);
@@ -109,7 +108,7 @@ void Server::createListenSocket()
         throw std::runtime_error(std::string("listen() error: ") +
                                  std::strerror(errno));
     }
-    std::cout << "[server] listen socket created" << std::endl;
+    log.log("listen socket created");
 }
 
 void Server::addListenToEpoll()

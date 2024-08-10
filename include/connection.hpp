@@ -1,5 +1,6 @@
 #pragma once
 
+#include "logger.hpp"
 #include "request.hpp"
 #include "response.hpp"
 #include <queue>
@@ -15,4 +16,5 @@ public:
 private:
     std::queue<Request> requests;
     int socket;
+    Logger log{"connection"};
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "connection.hpp"
+#include "logger.hpp"
 #include <sys/epoll.h>
 #include <unordered_map>
 
@@ -22,4 +23,6 @@ private:
     int epoll_fd = 0;
     epoll_event event;
     std::unordered_map<int, Connection> connections;
+
+    Logger log{"server"};
 };
