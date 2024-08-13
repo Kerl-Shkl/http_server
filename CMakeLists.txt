@@ -10,3 +10,5 @@ set(SOURCE_FILES src/main.cpp src/linux_connection.cpp src/epoll_connection.cpp 
 
 add_executable(exec ${SOURCE_FILES})
 target_include_directories(exec PRIVATE include)
+
+add_subdirectory(tests)
