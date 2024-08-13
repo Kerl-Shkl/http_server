@@ -14,8 +14,8 @@ class ConnectionsList
         , prev(nullptr)
         {}
         Connection connection;
-        Node *next;
-        Node *prev;
+        Node *next = nullptr;
+        Node *prev = nullptr;
     };
 
 public:
@@ -31,23 +31,37 @@ public:
     void pushBack(Connection&& conn)
     {
         Node *new_node = new Node(std::move(conn));
-        if (back != nullptr) {
-            back->next = new_node;
-        }
-        else {
+        if (front == nullptr) {
+            back = new_node;
             front = new_node;
         }
-        back = new_node;
+        else {
+            back->next = new_node;
+            new_node->prev = back;
+            back = new_node;
+        }
     }
 
     void removeNode(Node_ptr node)
     {
         assert(node != nullptr);
-        if (node->prev != nullptr) {
-            node->prev->next = node->next;
+        assert(!empty());
+
+        if (back == node && front == node) {
+            front = nullptr;
+            back = nullptr;
         }
-        if (node->next != nullptr) {
+        else if (node == front) {
+            front = node->next;
+            front->prev = nullptr;
+        }
+        else if (node == back) {
+            back = node->prev;
+            back->next = nullptr;
+        }
+        else {
             node->next->prev = node->prev;
+            node->prev->next = node->next;
         }
         delete node;
     }
