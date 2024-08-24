@@ -24,13 +24,7 @@ void Server::run()
         }
         for (auto& connection_node : ready_connections) {
             Connection& connection = connections.getConnection(connection_node);
-            if (connection.canRead()) {
-                connection.readRequest();
-                connection.solveRequest();
-            }
-            if (connection.canWrite()) {
-                connection.writeResponse();
-            }
+            doIO(connection);
 
             if (connection.closed()) {
                 log.log("connection closed");
@@ -81,6 +75,17 @@ void Server::returnConnectionToWaiters(Connection& connection)
         connection.setEvents(new_events);
         epoll_event ee = {.events = new_events, .data = {.ptr = &connection}};
         epoll_ctl(epoll_fd, EPOLL_CTL_MOD, connection.getSocket(), &ee);
+    }
+}
+
+void Server::doIO(Connection& connection)
+{
+    if (connection.canRead()) {
+        connection.readRequest();
+        connection.solveRequest();
+    }
+    if (connection.canWrite()) {
+        connection.writeResponse();
     }
 }
 

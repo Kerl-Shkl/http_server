@@ -18,6 +18,7 @@ private:
     void waitConnection();
     bool newClients() const noexcept;
     void returnConnectionToWaiters(Connection& connection);
+    void doIO(Connection& connection);
 
     void createListenSocket();
     void addListenToEpoll();
