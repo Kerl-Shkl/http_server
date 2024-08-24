@@ -18,7 +18,7 @@ Server::Server()
 void Server::run()
 {
     for (;;) {
-        wait_connection();
+        waitConnection();
         if (newClients()) {
             addConnection();
         }
@@ -44,7 +44,7 @@ void Server::run()
     }
 }
 
-void Server::wait_connection()
+void Server::waitConnection()
 {
     int waited_count;
     while ((waited_count = epoll_wait(epoll_fd, &event, 1, -1)) < 1) {

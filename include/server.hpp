@@ -15,7 +15,7 @@ public:
 private:
     using Connection = EpollConnection;
 
-    void wait_connection();
+    void waitConnection();
     bool newClients() const noexcept;
     void returnConnectionToWaiters(Connection& connection);
 
