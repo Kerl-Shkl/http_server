@@ -8,3 +8,4 @@ function(create_request_test SOURCE_NAME)
 endfunction()
 
 create_request_test(method_parser_test.cpp)
+create_request_test(headers_builder_test.cpp)
