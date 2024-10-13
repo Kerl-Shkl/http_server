@@ -9,3 +9,4 @@ endfunction()
 
 create_request_test(method_parser_test.cpp)
 create_request_test(headers_builder_test.cpp)
+create_request_test(first_line_parser_test.cpp)
