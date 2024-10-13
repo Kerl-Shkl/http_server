@@ -10,6 +10,7 @@ TEST(FirstLineParserTest, parseCorrectLine)
     EXPECT_EQ(parser.getMethod(), HttpMethod::GET);
     EXPECT_EQ(parser.getTarget(), "/");
     EXPECT_EQ(parser.getProtocol(), "HTTP/1.1");
+    EXPECT_EQ(parser.getLineEnd(), correct_line.size());
 }
 
 TEST(FirstLineParserTest, endlessLine)
@@ -21,6 +22,7 @@ TEST(FirstLineParserTest, endlessLine)
     EXPECT_EQ(parser.getMethod(), HttpMethod::INCORRECT);
     EXPECT_EQ(parser.getTarget(), "");
     EXPECT_EQ(parser.getProtocol(), "");
+    EXPECT_EQ(parser.getLineEnd(), std::string_view::npos);
 }
 
 TEST(FirstLineParserTest, incorrectMethod)

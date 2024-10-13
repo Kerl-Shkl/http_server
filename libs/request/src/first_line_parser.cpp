@@ -1,7 +1,5 @@
 #include "first_line_parser.hpp"
-
 #include "method_parser.hpp"
-#include <stdexcept>
 
 HttpMethod FirstLineParser::getMethod() const
 {
@@ -18,9 +16,14 @@ std::string FirstLineParser::getProtocol() const
     return protocol;
 }
 
+size_t FirstLineParser::getLineEnd() const
+{
+    return line_end == std::string_view::npos ? line_end : line_end + 1;  // plus one for '\n'
+}
+
 bool FirstLineParser::parse(const std::string_view str)
 {
-    size_t line_end = lineEnd(str);
+    line_end = lineEnd(str);
     if (line_end == std::string_view::npos) {
         return false;
     }

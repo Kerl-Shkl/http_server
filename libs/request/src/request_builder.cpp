@@ -1,5 +1,6 @@
 #include "request_builder.hpp"
-#include <stdexcept>
+#include "first_line_parser.hpp"
+#include <cassert>
 
 void RequestBuilder::complete(std::string_view new_info)
 {
@@ -9,21 +10,59 @@ void RequestBuilder::complete(std::string_view new_info)
 void RequestBuilder::processNext()
 {
     switch (current_component) {
-    case CurrentComponent::method:
-        parseMethod();
+    case CurrentComponent::first_line:
+        parseFirstLine();
         break;
+    case CurrentComponent::headers:
+        parseHeaders();
+        break;
+    case CurrentComponent::body:
+        parseBody();
+        break;
+    case CurrentComponent::complete:
+        // TODO complete
+        break;
+    default:
+        assert(false);
     }
 }
 
-void RequestBuilder::parseMethod()
+void RequestBuilder::parseFirstLine()
 {
-    auto answer = method_parser.parse(buffer);
-    if (answer.need_more) {
+    assert(actual_pos == 0);
+    FirstLineParser first_line_parser;
+    const bool first_line_complete = first_line_parser.parse(buffer);
+    if (!first_line_complete) {
         return;
     }
-    if (answer.method == HttpMethod::INCORRECT) {
-        throw std::runtime_error{"incorrect method"};
+
+    request.setMethod(first_line_parser.getMethod());
+    request.setTarget(first_line_parser.getTarget());
+    request.setProtocol(first_line_parser.getProtocol());
+
+    actual_pos = first_line_parser.getLineEnd();
+    current_component = CurrentComponent::headers;
+}
+
+void RequestBuilder::parseHeaders()
+{
+    if (actual_pos >= buffer.size()) {
+        return;
     }
-    request.setMethod(answer.method);
-    actual_pos = answer.method_end;
+    headers_builder.add(std::string_view{buffer.begin() + actual_pos, buffer.end()});
+
+    if (!headers_builder.isComplete()) {
+        actual_pos = buffer.size();
+        return;
+    }
+
+    const auto& headers = headers_builder.getHeaders();
+    request.setHeaders(headers);
+    actual_pos += headers_builder.getAfterHeadersPos();
+    current_component = needBody(headers) ? CurrentComponent::body : CurrentComponent::complete;
+}
+
+bool RequestBuilder::needBody(const HeadersBuilder::HeadersTable& headers) const
+{
+    return false;  // TODO ASAP
 }

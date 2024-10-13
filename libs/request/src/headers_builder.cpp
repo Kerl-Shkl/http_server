@@ -34,8 +34,12 @@ bool HeadersBuilder::isComplete() const
     return actual_part == ActualPart::table_complete;
 }
 
-auto HeadersBuilder::getHeaders() const
-    -> HeadersTable  // May it worth to move headers
+auto HeadersBuilder::getHeaders() const -> const HeadersTable&
+{
+    return headers;
+}
+
+auto HeadersBuilder::getHeaders() -> HeadersTable&
 {
     return headers;
 }
@@ -95,9 +99,7 @@ bool HeadersBuilder::readValue(const string_view str)
 
 bool HeadersBuilder::headersEnd(const string_view str)
 {
-    if (actual_part == ActualPart::key && key.empty() &&
-        str[actual_pos] == '\n')
-    {
+    if (actual_part == ActualPart::key && key.empty() && str[actual_pos] == '\n') {
         ++actual_pos;
         return true;
     }

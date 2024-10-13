@@ -4,7 +4,6 @@
 #include <string>
 
 #include "headers_builder.hpp"
-#include "method_parser.hpp"
 
 class RequestBuilder
 {
@@ -15,29 +14,25 @@ public:
 
 private:
     void processNext();
-    void parseMethod();
-    void parseTarget();
-    void parseProtocol();
+    void parseFirstLine();
     void parseHeaders();
     void parseBody();
 
+    bool needBody(const HeadersBuilder::HeadersTable& headers) const;
+
     enum class CurrentComponent
     {
-        method,
-        target,
-        protocol,
+        first_line,
         headers,
         body,
         complete
     };
 
-    CurrentComponent current_component{CurrentComponent::method};
-    bool need_body;
+    CurrentComponent current_component{CurrentComponent::first_line};
 
     HttpRequest request;
     std::string buffer{};
     std::size_t actual_pos{0};
 
-    MethodParser method_parser;
     HeadersBuilder headers_builder;
 };

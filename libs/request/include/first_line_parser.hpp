@@ -12,6 +12,7 @@ public:
     HttpMethod getMethod() const;
     std::string getTarget() const;
     std::string getProtocol() const;
+    size_t getLineEnd() const;
 
 private:
     size_t lineEnd(const std::string_view str);
@@ -22,6 +23,7 @@ private:
     HttpMethod method{HttpMethod::INCORRECT};
     std::string target{};
     std::string protocol{};
+    size_t line_end = std::string_view::npos;
 };
 
 struct IncorrectMethod : std::exception

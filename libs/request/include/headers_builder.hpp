@@ -6,16 +6,15 @@
 
 class HeadersBuilder
 {
-private:
-    using HeadersTable = std::unordered_map<std::string, std::string>;
-
 public:
+    using HeadersTable = std::unordered_map<std::string, std::string>;
     using string_view = std::string_view;
     using size_type = string_view::size_type;
 
     void add(const string_view str);
     bool isComplete() const;
-    HeadersTable getHeaders() const;  // May it worth to move headers
+    const HeadersTable& getHeaders() const;
+    HeadersTable& getHeaders();
     size_type getAfterHeadersPos() const;
     void reset();
 
