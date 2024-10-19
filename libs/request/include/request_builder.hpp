@@ -11,8 +11,11 @@ public:
     RequestBuilder() = default;
     void complete(std::string_view new_info);
     bool isComplete() const noexcept;
+    HttpRequest& getRequest() noexcept;
+    const HttpRequest& getRequest() const noexcept;
 
 private:
+    void parse();
     void processNext();
     void parseFirstLine();
     void parseHeaders();

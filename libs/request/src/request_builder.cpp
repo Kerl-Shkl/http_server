@@ -2,9 +2,34 @@
 #include "first_line_parser.hpp"
 #include <cassert>
 
+bool RequestBuilder::isComplete() const noexcept
+{
+    return current_component == CurrentComponent::complete;
+}
+
+HttpRequest& RequestBuilder::getRequest() noexcept
+{
+    return request;
+}
+
+const HttpRequest& RequestBuilder::getRequest() const noexcept
+{
+    return request;
+}
+
 void RequestBuilder::complete(std::string_view new_info)
 {
     buffer += new_info;
+    parse();
+}
+
+void RequestBuilder::parse()
+{
+    CurrentComponent old_state;
+    do {
+        old_state = current_component;
+        processNext();
+    } while (old_state != current_component);
 }
 
 void RequestBuilder::processNext()
@@ -65,4 +90,9 @@ void RequestBuilder::parseHeaders()
 bool RequestBuilder::needBody(const HeadersBuilder::HeadersTable& headers) const
 {
     return false;  // TODO ASAP
+}
+
+void RequestBuilder::parseBody()
+{
+    ;
 }
