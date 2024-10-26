@@ -16,9 +16,11 @@ public:
     virtual void writeResponse();
     bool writeReady() const noexcept;
 
-private:
-    int socket;
+protected:
     Request actual_request;
     Response response;
+
+private:
+    int socket;
     Logger log{"connection"};
 };
