@@ -72,7 +72,7 @@ protected:
 
     void breakTarget()
     {
-        break_pos = 8;
+        break_pos = 8;  // NOLINT
     }
 
     void breakProtocol()
@@ -96,7 +96,7 @@ protected:
         break_pos = body_pos + 4;
     }
 
-    void runTest()
+    void runTest() const
     {
         RequestBuilder builder;
         std::string_view first_part{request.begin(), request.begin() + break_pos};
