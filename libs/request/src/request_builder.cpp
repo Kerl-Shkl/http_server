@@ -1,5 +1,6 @@
 #include "request_builder.hpp"
 #include "first_line_parser.hpp"
+#include <boost/lexical_cast.hpp>
 #include <cassert>
 
 bool RequestBuilder::isComplete() const noexcept
@@ -84,15 +85,28 @@ void RequestBuilder::parseHeaders()
     const auto& headers = headers_builder.getHeaders();
     request.setHeaders(headers);
     actual_pos += headers_builder.getAfterHeadersPos();
-    current_component = needBody(headers) ? CurrentComponent::body : CurrentComponent::complete;
+    current_component = needBody() ? CurrentComponent::body : CurrentComponent::complete;
 }
 
-bool RequestBuilder::needBody(const HeadersBuilder::HeadersTable& headers) const
+bool RequestBuilder::needBody() const
 {
-    return false;  // TODO ASAP
+    // TODO add check method allow body
+    const auto& headers = request.getHeaders();
+    return headers.contains("Content-Length");
 }
 
 void RequestBuilder::parseBody()
 {
-    ;
+    const auto& headers = request.getHeaders();
+    assert(headers.contains("Content-Length"));
+    size_t body_length = boost::lexical_cast<size_t>(headers.at("Content-Length"));
+
+    if (actual_pos + body_length > buffer.size()) {
+        return;
+    }
+
+    auto body_start = buffer.begin() + actual_pos;
+    auto body_end = body_start + body_length;
+    request.setBody(std::string{body_start, body_end});
+    current_component = CurrentComponent::complete;
 }

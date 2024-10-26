@@ -21,7 +21,7 @@ private:
     void parseHeaders();
     void parseBody();
 
-    bool needBody(const HeadersBuilder::HeadersTable& headers) const;
+    bool needBody() const;
 
     enum class CurrentComponent
     {
