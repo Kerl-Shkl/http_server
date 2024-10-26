@@ -118,8 +118,8 @@ protected:
         EXPECT_EQ(result.getBody(), "Body text");
     }
 
+private:
     size_t break_pos = 0;
-
     static constexpr std::string_view request =
         "GET /test_url HTTP/1.1\n"
         "Host: example.com\n"

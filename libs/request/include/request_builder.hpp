@@ -34,8 +34,8 @@ private:
     CurrentComponent current_component{CurrentComponent::first_line};
 
     HttpRequest request;
-    std::string buffer{};
-    std::size_t actual_pos{0};
+    std::string buffer;
+    size_t actual_pos{0};
 
     HeadersBuilder headers_builder;
 };

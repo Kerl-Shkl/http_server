@@ -64,16 +64,16 @@ bool HeadersBuilder::readKey(const string_view str)
         actual_pos = str.find_first_not_of(' ', actual_pos);
     }
     for (; actual_pos < str.size(); ++actual_pos) {
-        char ch = str[actual_pos];
-        if (ch == ':') {
+        char ach = str[actual_pos];
+        if (ach == ':') {
             ++actual_pos;  // skip ':'
             boost::trim_right(key);
             return true;
         }
-        if (ch == '\n') {  // TODO add more forbidden symbols
+        if (ach == '\n') {  // TODO add more forbidden symbols
             throw std::runtime_error{"incorrect header key"};
         }
-        key += ch;
+        key += ach;
         // TODO add check if buffer is too big
     }
     return false;
@@ -85,14 +85,14 @@ bool HeadersBuilder::readValue(const string_view str)
         actual_pos = str.find_first_not_of(' ', actual_pos);
     }
     for (; actual_pos < str.size(); ++actual_pos) {
-        char ch = str[actual_pos];
-        if (ch == '\n') {  // TODO add more forbidden symbols
+        char ach = str[actual_pos];
+        if (ach == '\n') {  // TODO add more forbidden symbols
             ++actual_pos;  // skip '\n'
             boost::trim_right(value);
             return true;
         }
         // TODO add check if buffer is too big
-        value += ch;
+        value += ach;
     }
     return false;
 }

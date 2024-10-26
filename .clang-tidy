@@ -13,6 +13,9 @@ Checks:
   - "performance-*"
   - "readability-*"
   - "-readability-avoid-const-params-in-decls"
+  - "-google-readability-todo*"
+  - "-readability-convert-member-functions-to-static"
+  - "-cppcoreguidelines-avoid-do-while"
 
 FormatStyle: none
 HeaderFileExtensions: ['', 'h', 'hpp', 'hxx']

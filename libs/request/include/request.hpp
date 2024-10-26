@@ -24,9 +24,9 @@ public:
     const std::string& getBody() const noexcept;
 
 private:
-    HttpMethod method_;
-    std::string target_;
-    std::string protocol_;
-    headers_t headers_;
-    std::string body_;
+    HttpMethod method{HttpMethod::INCORRECT};
+    std::string target;
+    std::string protocol;
+    headers_t headers;
+    std::string body;
 };

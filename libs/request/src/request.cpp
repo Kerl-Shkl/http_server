@@ -1,51 +1,51 @@
 #include "request.hpp"
 
-void HttpRequest::setMethod(HttpMethod method) noexcept
+void HttpRequest::setMethod(HttpMethod new_method) noexcept
 {
-    method_ = method;
+    method = new_method;
 }
 
-void HttpRequest::setTarget(std::string target)
+void HttpRequest::setTarget(std::string new_target)
 {
-    target_ = std ::move(target);
+    target = std ::move(new_target);
 }
 
-void HttpRequest::setProtocol(std::string protocol)
+void HttpRequest::setProtocol(std::string new_protocol)
 {
-    protocol_ = std::move(protocol);
+    protocol = std::move(new_protocol);
 }
 
-void HttpRequest::setHeaders(headers_t headers)
+void HttpRequest::setHeaders(headers_t new_headers)
 {
-    headers_ = std::move(headers);
+    headers = std::move(new_headers);
 }
 
-void HttpRequest::setBody(std::string body)
+void HttpRequest::setBody(std::string new_body)
 {
-    body_ = std::move(body);
+    body = std::move(new_body);
 }
 
 HttpMethod HttpRequest::getMethod() const noexcept
 {
-    return method_;
+    return method;
 }
 
 const std::string& HttpRequest::getTarget() const noexcept
 {
-    return target_;
+    return target;
 }
 
 const std::string& HttpRequest::getProtocol() const noexcept
 {
-    return protocol_;
+    return protocol;
 }
 
 auto HttpRequest::getHeaders() const noexcept -> const headers_t&
 {
-    return headers_;
+    return headers;
 }
 
 const std::string& HttpRequest::getBody() const noexcept
 {
-    return body_;
+    return body;
 }

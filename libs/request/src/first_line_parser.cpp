@@ -55,8 +55,7 @@ size_t FirstLineParser::lineEnd(const std::string_view str)
 
 size_t FirstLineParser::parseMethod(const std::string_view str)
 {
-    MethodParser method_parser;
-    auto answer = method_parser.parse(str);
+    auto answer = MethodParser::parse(str);
     if (answer.need_more) {
         throw IncorrectFirstLine{"first line unexpectedly ends"};
     }

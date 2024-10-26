@@ -30,9 +30,9 @@ private:
         table_complete
     };
 
-    HeadersTable headers{};
-    std::string key{};
-    std::string value{};
+    HeadersTable headers;
+    std::string key;
+    std::string value;
     size_type actual_pos{0};
     ActualPart actual_part{ActualPart::key};
 };

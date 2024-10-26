@@ -9,10 +9,10 @@ class FirstLineParser
 {
 public:
     bool parse(const std::string_view str);
-    HttpMethod getMethod() const;
-    std::string getTarget() const;
-    std::string getProtocol() const;
-    size_t getLineEnd() const;
+    [[nodiscard]] HttpMethod getMethod() const;
+    [[nodiscard]] std::string getTarget() const;
+    [[nodiscard]] std::string getProtocol() const;
+    [[nodiscard]] size_t getLineEnd() const;
 
 private:
     size_t lineEnd(const std::string_view str);
@@ -21,14 +21,14 @@ private:
     size_t parseProtocol(const std::string_view str);
 
     HttpMethod method{HttpMethod::INCORRECT};
-    std::string target{};
-    std::string protocol{};
+    std::string target;
+    std::string protocol;
     size_t line_end = std::string_view::npos;
 };
 
 struct IncorrectMethod : std::exception
 {
-    virtual const char *what() const throw() override
+    const char *what() const throw() override  // NOLINT
     {
         return "Incorrect method";
     }
@@ -40,10 +40,9 @@ struct IncorrectFirstLine : std::runtime_error
     : runtime_error{std::string{"Incorrect first line. "} + message}
     {}
 
-    ~IncorrectFirstLine() override
-    {}
+    ~IncorrectFirstLine() override = default;
 
-    virtual const char *what() const throw() override
+    const char *what() const throw() override  // NOLINT
     {
         return runtime_error::what();
     }

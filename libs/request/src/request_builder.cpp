@@ -1,6 +1,7 @@
 #include "request_builder.hpp"
 #include "first_line_parser.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <cassert>
 
 bool RequestBuilder::isComplete() const noexcept
@@ -26,7 +27,7 @@ void RequestBuilder::complete(std::string_view new_info)
 
 void RequestBuilder::parse()
 {
-    CurrentComponent old_state;
+    CurrentComponent old_state{};
     do {
         old_state = current_component;
         processNext();
@@ -70,12 +71,19 @@ void RequestBuilder::parseFirstLine()
     current_component = CurrentComponent::headers;
 }
 
+namespace {
+inline std::string::difference_type toDiffType(size_t pos)
+{
+    return boost::numeric_cast<std::string::difference_type>(pos);
+}
+}  // namespace
+
 void RequestBuilder::parseHeaders()
 {
     if (actual_pos >= buffer.size()) {
         return;
     }
-    headers_builder.add(std::string_view{buffer.begin() + actual_pos, buffer.end()});
+    headers_builder.add(std::string_view{buffer.begin() + toDiffType(actual_pos), buffer.end()});
 
     if (!headers_builder.isComplete()) {
         actual_pos = buffer.size();
@@ -99,14 +107,14 @@ void RequestBuilder::parseBody()
 {
     const auto& headers = request.getHeaders();
     assert(headers.contains("Content-Length"));
-    size_t body_length = boost::lexical_cast<size_t>(headers.at("Content-Length"));
+    auto body_length = boost::lexical_cast<size_t>(headers.at("Content-Length"));
 
     if (actual_pos + body_length > buffer.size()) {
         return;
     }
 
-    auto body_start = buffer.begin() + actual_pos;
-    auto body_end = body_start + body_length;
+    auto body_start = buffer.begin() + toDiffType(actual_pos);
+    auto body_end = body_start + toDiffType(body_length);
     request.setBody(std::string{body_start, body_end});
     current_component = CurrentComponent::complete;
 }
