@@ -1,9 +1,3 @@
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-enable_testing()
-
-include(GoogleTest)
-
 function(create_dummy_test SOURCE_NAME)
     get_filename_component(TARGET_NAME ${SOURCE_NAME} NAME_WE)
     add_executable(${TARGET_NAME})

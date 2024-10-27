@@ -13,5 +13,6 @@ public:
     bool isComplete() const noexcept;
 
 private:
+
     std::string body;
 };
