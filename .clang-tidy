@@ -16,6 +16,9 @@ Checks:
   - "-google-readability-todo*"
   - "-readability-convert-member-functions-to-static"
   - "-cppcoreguidelines-avoid-do-while"
+  - "-modernize-use-auto"
+  - "-cppcoreguidelines-pro-type-reinterpret-cast"
+  - "-cppcoreguidelines-pro-type-vararg"
 
 FormatStyle: none
 HeaderFileExtensions: ['', 'h', 'hpp', 'hxx']

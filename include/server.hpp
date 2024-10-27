@@ -16,7 +16,7 @@ private:
     using Connection = EpollConnection;
 
     void waitConnection();
-    bool newClients() const noexcept;
+    [[nodiscard]] bool newClients() const noexcept;
     void returnConnectionToWaiters(Connection& connection);
     void doIO(Connection& connection);
 
@@ -26,12 +26,11 @@ private:
     void addConnection();
     void createEpoll();
 
-    static constexpr short port = 8000;
+    static constexpr short port = 8000;  // NOLINT
     int listen_sd = 0;
     int epoll_fd = 0;
     bool need_accept = false;
 
-    epoll_event event;  // TODO remove this field
     ConnectionsList<Connection> connections;
     using ConnectionNode = decltype(connections)::Node_ptr;
     std::vector<ConnectionNode> ready_connections;
