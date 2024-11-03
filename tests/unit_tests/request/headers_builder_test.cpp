@@ -3,7 +3,7 @@
 
 TEST(HeadersBuilderTest, addCorrectHeader)
 {
-    constexpr std::string_view correct_header = "test_key : test_value\n\n";
+    constexpr std::string_view correct_header = "test_key : test_value\r\n\r\n";
     HeadersBuilder builder;
     builder.add(correct_header);
     ASSERT_TRUE(builder.isComplete());
@@ -16,8 +16,7 @@ TEST(HeadersBuilderTest, addCorrectHeader)
 
 TEST(HeadersBuilderTest, extraSpaces)
 {
-    constexpr std::string_view correct_header =
-        "   test_key   :  test_value  \n\n";
+    constexpr std::string_view correct_header = "   test_key   :  test_value  \r\n\r\n";
     HeadersBuilder builder;
     builder.add(correct_header);
     ASSERT_TRUE(builder.isComplete());
@@ -30,8 +29,8 @@ TEST(HeadersBuilderTest, extraSpaces)
 
 TEST(HeadersBuilderTest, separateEnd)
 {
-    constexpr std::string_view first_part = "   test_key   :  test_value  \n";
-    constexpr std::string_view second_part = "\nanother part";
+    constexpr std::string_view first_part = "   test_key   :  test_value  \r\n";
+    constexpr std::string_view second_part = "\r\nanother part";
     HeadersBuilder builder;
     builder.add(first_part);
     ASSERT_FALSE(builder.isComplete());
@@ -42,13 +41,21 @@ TEST(HeadersBuilderTest, separateEnd)
     EXPECT_EQ(headers.size(), 1);
     EXPECT_TRUE(headers.contains("test_key"));
     EXPECT_EQ(headers["test_key"], "test_value");
-    EXPECT_EQ(headers_end, second_part.find_first_not_of('\n'));
+    EXPECT_EQ(headers_end, second_part.find_first_not_of("\n\r"));
+}
+
+TEST(HeadersBuilderTest, fuckingCrutch)
+{
+    constexpr std::string_view first_part = "   test_key   :  test_value  \r\n\r";  // without last \n
+    HeadersBuilder builder;
+    builder.add(first_part);
+    ASSERT_TRUE(builder.isComplete());  // crutch invariant
 }
 
 TEST(HeadersBuilderTest, addFewCorrectHeader)
 {
-    constexpr std::string_view first_header = "first_key : first_value\n";
-    constexpr std::string_view second_header = "second_key : second_value\n\n";
+    constexpr std::string_view first_header = "first_key : first_value\r\n";
+    constexpr std::string_view second_header = "second_key : second_value\r\n\r\n";
     HeadersBuilder builder;
     builder.add(first_header);
     ASSERT_FALSE(builder.isComplete());
@@ -65,9 +72,9 @@ TEST(HeadersBuilderTest, addFewCorrectHeader)
 
 TEST(HeadersBuilderTest, keyBreak)
 {
-    constexpr std::string_view first_part = "first_key : first_value\n";
+    constexpr std::string_view first_part = "first_key : first_value\r\n";
     constexpr std::string_view second_part = "second";
-    constexpr std::string_view third_part = "_key : second_value\n\n";
+    constexpr std::string_view third_part = "_key : second_value\r\n\r\n";
     HeadersBuilder builder;
     builder.add(first_part);
     ASSERT_FALSE(builder.isComplete());
@@ -86,9 +93,9 @@ TEST(HeadersBuilderTest, keyBreak)
 
 TEST(HeadersBuilderTest, valueBreak)
 {
-    constexpr std::string_view first_part = "first_key : first_value\n";
+    constexpr std::string_view first_part = "first_key : first_value\r\n";
     constexpr std::string_view second_part = "second_key : second";
-    constexpr std::string_view third_part = "_value\n\n";
+    constexpr std::string_view third_part = "_value\r\n\r\n";
     HeadersBuilder builder;
     builder.add(first_part);
     ASSERT_FALSE(builder.isComplete());

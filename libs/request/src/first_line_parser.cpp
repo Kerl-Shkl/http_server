@@ -81,7 +81,7 @@ size_t FirstLineParser::parseTarget(const std::string_view str)
 
 size_t FirstLineParser::parseProtocol(const std::string_view str)
 {
-    auto protocol_end = str.find_first_of(" \n");
+    auto protocol_end = str.find_first_of(" \r\n");
     if (protocol_end == std::string_view::npos) {
         throw IncorrectFirstLine{"There is not end of protocol"};
     }

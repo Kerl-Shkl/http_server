@@ -22,6 +22,7 @@ Checks:
   - "-cppcoreguidelines-non-private-member-variables-in-classes"
   - "-google-explicit-constructor"
   - "-misc-non-private-member-variables-in-classes"
+  - "-readability-identifier-length"
 
 FormatStyle: none
 HeaderFileExtensions: ['', 'h', 'hpp', 'hxx']

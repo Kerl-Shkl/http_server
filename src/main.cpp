@@ -4,7 +4,8 @@
 int main()
 {
     try {
-        Server server;
+        LogicalController logical_controller;
+        Server server{std::move(logical_controller)};
         server.run();
     }
     catch (std::exception& e) {

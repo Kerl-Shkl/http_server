@@ -11,6 +11,9 @@ public:
     void readNewMessage();
     [[nodiscard]] bool writeReady() const noexcept;
     void writeMessage();
+    [[nodiscard]] bool requestCompleted() const noexcept;
+    HttpRequest getRequest();
+    void setResponce(std::string responce);
 
     using EpollConnection::canRead;
     using EpollConnection::canWrite;

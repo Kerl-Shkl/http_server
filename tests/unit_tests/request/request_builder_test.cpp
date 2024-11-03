@@ -4,9 +4,9 @@
 TEST(RequestBuilderTest, buildCorrectRequest)
 {
     constexpr std::string_view get_request =
-        "GET /test_url HTTP/1.1\n"
-        "Host: example.com\n"
-        "Accept: application/json\n\n";
+        "GET /test_url HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "Accept: application/json\r\n\r\n";
 
     RequestBuilder builder;
     builder.complete(get_request);
@@ -26,10 +26,10 @@ TEST(RequestBuilderTest, buildCorrectRequest)
 TEST(RequestBuilderTest, buildCorrectRequestWithBody)
 {
     constexpr std::string_view get_request =
-        "GET /test_url HTTP/1.1\n"
-        "Host: example.com\n"
-        "Content-Length: 9\n"
-        "Accept: application/json\n\n"
+        "GET /test_url HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "Content-Length: 9\r\n"
+        "Accept: application/json\r\n\r\n"
         "Body text";
 
     RequestBuilder builder;
@@ -52,9 +52,9 @@ TEST(RequestBuilderTest, buildCorrectRequestWithBody)
 TEST(RequestBuilderTest, endlessRequest)
 {
     constexpr std::string_view endless_request =
-        "GET /test_url HTTP/1.1\n"
-        "Host: example.com\n"
-        "Accept: application/json\n";
+        "GET /test_url HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "Accept: application/json\r\n";
 
     RequestBuilder builder;
     builder.complete(endless_request);
@@ -121,10 +121,10 @@ protected:
 private:
     size_t break_pos = 0;
     static constexpr std::string_view request =
-        "GET /test_url HTTP/1.1\n"
-        "Host: example.com\n"
-        "Content-Length: 9\n"
-        "Accept: application/json\n\n"
+        "GET /test_url HTTP/1.1\r\n"
+        "Host: example.com\r\n"
+        "Content-Length: 9\r\n"
+        "Accept: application/json\r\n\r\n"
         "Body text";
 };
 

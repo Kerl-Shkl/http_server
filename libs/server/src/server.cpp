@@ -8,7 +8,8 @@
 #include <string>
 #include <sys/socket.h>
 
-Server::Server()
+Server::Server(LogicalController&& controller)
+: logical_controller{std::move(controller)}
 {
     createEpoll();
     createListenSocket();
@@ -80,6 +81,11 @@ void Server::doIO(Connection& connection)
 {
     if (connection.canRead()) {
         connection.readNewMessage();
+        if (connection.requestCompleted()) {
+            auto request = connection.getRequest();
+            auto responce = logical_controller.process(request);
+            connection.setResponce(std::move(responce));
+        }
     }
     if (connection.canWrite()) {
         connection.writeMessage();

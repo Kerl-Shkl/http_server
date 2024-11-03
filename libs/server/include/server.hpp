@@ -3,13 +3,14 @@
 #include "client_connection.hpp"
 #include "connections_list.hpp"
 #include "logger.hpp"
+#include "logical_controller.hpp"
 #include <sys/epoll.h>
 #include <vector>
 
 class Server
 {
 public:
-    Server();
+    Server(LogicalController&& controller);
     void run();
 
 private:
@@ -34,6 +35,7 @@ private:
     ConnectionsList<Connection> connections;
     using ConnectionNode = decltype(connections)::Node_ptr;
     std::vector<ConnectionNode> ready_connections;
+    LogicalController logical_controller;
 
     Logger log{"server"};
 };

@@ -48,9 +48,7 @@ std::string LinuxConnection::readMessage()
     if (read_count == 0) {
         closeConnection();
     }
-    std::string result = body.str();
-    log.log("read new message: ", result);
-    return result;
+    return body.str();
 }
 
 std::string_view LinuxConnection::writeMessage(const std::string_view message)
