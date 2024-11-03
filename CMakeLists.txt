@@ -7,10 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(libs)
 
-set(SOURCE_FILES src/main.cpp src/linux_connection.cpp src/epoll_connection.cpp src/request.cpp src/server.cpp
-    src/logger.cpp src/response.cpp)
+set(SOURCE_FILES src/main.cpp)
 
 add_executable(exec ${SOURCE_FILES})
+target_link_libraries(exec PRIVATE server)
 target_include_directories(exec PRIVATE include)
 
 add_subdirectory(tests)

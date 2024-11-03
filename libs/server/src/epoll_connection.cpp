@@ -1,20 +1,15 @@
 #include "epoll_connection.hpp"
 
-void EpollConnection::readRequest()
+std::string EpollConnection::readMessage()
 {
-    LinuxConnection::readRequest();
     can_read = false;
+    return LinuxConnection::readMessage();
 }
 
-void EpollConnection::solveRequest()
+std::string_view EpollConnection::writeMessage(const std::string_view message)
 {
-    LinuxConnection::solveRequest();
-}
-
-void EpollConnection::writeResponse()
-{
-    LinuxConnection::writeResponse();
     can_write = false;
+    return LinuxConnection::writeMessage(message);
 }
 
 bool EpollConnection::canRead() const noexcept

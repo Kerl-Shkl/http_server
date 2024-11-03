@@ -79,11 +79,10 @@ void Server::returnConnectionToWaiters(Connection& connection)
 void Server::doIO(Connection& connection)
 {
     if (connection.canRead()) {
-        connection.readRequest();
-        connection.solveRequest();
+        connection.readNewMessage();
     }
     if (connection.canWrite()) {
-        connection.writeResponse();
+        connection.writeMessage();
     }
 }
 

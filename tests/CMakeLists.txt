@@ -4,5 +4,5 @@ enable_testing()
 
 include(GoogleTest)
 
-add_subdirectory(unit_tests)
 add_subdirectory(unit_tests/request)
+add_subdirectory(unit_tests/server)

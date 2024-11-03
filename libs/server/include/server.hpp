@@ -1,7 +1,7 @@
 #pragma once
 
+#include "client_connection.hpp"
 #include "connections_list.hpp"
-#include "epoll_connection.hpp"
 #include "logger.hpp"
 #include <sys/epoll.h>
 #include <vector>
@@ -13,7 +13,7 @@ public:
     void run();
 
 private:
-    using Connection = EpollConnection;
+    using Connection = ClientConnection;
 
     void waitConnection();
     [[nodiscard]] bool newClients() const noexcept;

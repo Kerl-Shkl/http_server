@@ -19,6 +19,9 @@ Checks:
   - "-modernize-use-auto"
   - "-cppcoreguidelines-pro-type-reinterpret-cast"
   - "-cppcoreguidelines-pro-type-vararg"
+  - "-cppcoreguidelines-non-private-member-variables-in-classes"
+  - "-google-explicit-constructor"
+  - "-misc-non-private-member-variables-in-classes"
 
 FormatStyle: none
 HeaderFileExtensions: ['', 'h', 'hpp', 'hxx']

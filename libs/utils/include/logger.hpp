@@ -6,6 +6,11 @@ class Logger
 {
 public:
     Logger(std::string pref, std::ostream& out = std::cout);
+    ~Logger() = default;
+    Logger(const Logger&) = default;
+    Logger(Logger&&) = default;
+    Logger& operator=(Logger&& rhp) noexcept = delete;
+    Logger& operator=(const Logger&) = delete;
 
     void log(std::string_view str) const noexcept;
     void log(std::string_view str, const char *s, int length) const noexcept;
@@ -14,7 +19,7 @@ public:
     void log(std::string_view str, T value) const noexcept;
 
 private:
-    std::string prefix = "";
+    std::string prefix;
     std::ostream& out;
 };
 
