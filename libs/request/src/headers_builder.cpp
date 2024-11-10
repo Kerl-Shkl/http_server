@@ -103,8 +103,8 @@ bool HeadersBuilder::readValue(const string_view str)
         char ch = str[actual_pos];
         if (ch == '\r') {  // TODO add more forbidden symbols
             if (actual_pos + 2 >= str.size()) {
-                prev_end = str.substr(actual_pos);
-                assert(prev_end.size() <= 2);
+                value_prev_end = str.substr(actual_pos);
+                assert(value_prev_end.size() <= 2);
                 actual_pos = str.size();
                 return false;
             }
@@ -122,28 +122,28 @@ bool HeadersBuilder::readValue(const string_view str)
 
 std::optional<bool> HeadersBuilder::handleValueEnd(const string_view str)
 {
-    if (!prev_end.empty()) {
-        if (prev_end.size() + str.size() < 3) [[unlikely]] {
-            prev_end += str;
+    if (!value_prev_end.empty()) {
+        if (value_prev_end.size() + str.size() < 3) [[unlikely]] {
+            value_prev_end += str;
             return std::nullopt;
         }
         else {
-            if (prev_end.size() == 1) {
+            if (value_prev_end.size() == 1) {
                 if (str[0] == '\n' && str[1] != ' ' && str[1] != '\t') {
                     ++actual_pos;
-                    prev_end.clear();
+                    value_prev_end.clear();
                     return true;
                 }
-                value += prev_end;
-                prev_end.clear();
+                value += value_prev_end;
+                value_prev_end.clear();
                 return false;
             }
-            if (prev_end[1] == '\n' && str[0] != ' ' && str[0] != '\t') {
-                prev_end.clear();
+            if (value_prev_end[1] == '\n' && str[0] != ' ' && str[0] != '\t') {
+                value_prev_end.clear();
                 return true;
             }
-            value += prev_end;
-            prev_end.clear();
+            value += value_prev_end;
+            value_prev_end.clear();
             return false;
         }
     }
@@ -152,8 +152,18 @@ std::optional<bool> HeadersBuilder::handleValueEnd(const string_view str)
 
 std::optional<bool> HeadersBuilder::headersEnd(const string_view str)
 {
+    if (headers_may_end) {
+        if (str[0] == '\n') {
+            headers_may_end = false;
+            return true;
+        }
+        headers_may_end = false;
+        throw std::runtime_error{"incorrect headers structure. Key start with \\r"};
+    }
+
     if (actual_part == ActualPart::key && key.empty() && str[actual_pos] == '\r') {
         if (actual_pos + 1 >= str.size()) {
+            headers_may_end = true;
             return std::nullopt;
         }
         if (str[actual_pos + 1] == '\n') {

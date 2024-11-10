@@ -39,5 +39,6 @@ private:
     size_type actual_pos{0};
     ActualPart actual_part{ActualPart::key};
 
-    std::string prev_end;
+    std::string value_prev_end;
+    bool headers_may_end{false};
 };

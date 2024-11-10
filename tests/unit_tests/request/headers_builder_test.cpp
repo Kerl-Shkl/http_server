@@ -44,13 +44,24 @@ TEST(HeadersBuilderTest, separateEnd)
     EXPECT_EQ(headers_end, second_part.find_first_not_of("\n\r"));
 }
 
-// TEST(HeadersBuilderTest, fuckingCrutch)
-// {
-//     constexpr std::string_view first_part = "   test_key   :  test_value  \r\n\r";  // without last \n
-//     HeadersBuilder builder;
-//     builder.add(first_part);
-//     ASSERT_TRUE(builder.isComplete());  // crutch invariant
-// }
+TEST(HeadersBuilderTest, correctEndDetection)
+{
+    constexpr std::string_view first_part = "   test_key   :  test_value  \r\n\r";  // without last \n
+    HeadersBuilder builder;
+    builder.add(first_part);
+    ASSERT_FALSE(builder.isComplete());
+    builder.add("\n");
+    ASSERT_TRUE(builder.isComplete());
+}
+
+TEST(HeadersBuilderTest, incorrectHeaderStructure)
+{
+    constexpr std::string_view first_part = "   test_key   :  test_value  \r\n\r";  // without last \n
+    HeadersBuilder builder;
+    builder.add(first_part);
+    ASSERT_FALSE(builder.isComplete());
+    EXPECT_THROW(builder.add("\t"), std::runtime_error);
+}
 
 TEST(HeadersBuilderTest, addFewCorrectHeader)
 {
