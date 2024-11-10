@@ -22,7 +22,9 @@ public:
 private:
     bool readKey(const string_view str);
     bool readValue(const string_view str);
-    bool headersEnd(const string_view str);
+    std::optional<bool> headersEnd(const string_view str);
+
+    std::optional<bool> handleValueEnd(const string_view str);
 
     enum class ActualPart
     {
@@ -36,4 +38,6 @@ private:
     std::string value;
     size_type actual_pos{0};
     ActualPart actual_part{ActualPart::key};
+
+    std::string prev_end;
 };

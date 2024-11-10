@@ -7,7 +7,11 @@ void HeadersBuilder::add(const string_view str)
 {
     assert(actual_part != ActualPart::table_complete);
     for (actual_pos = 0; str.size() > actual_pos;) {
-        if (headersEnd(str)) {
+        std::optional<bool> headers_end = headersEnd(str);
+        if (!headers_end.has_value()) {
+            return;
+        }
+        if (*headers_end) {
             actual_part = ActualPart::table_complete;
             return;
         }
@@ -81,15 +85,34 @@ bool HeadersBuilder::readKey(const string_view str)
 
 bool HeadersBuilder::readValue(const string_view str)
 {
+    std::optional<bool> value_end = handleValueEnd(str);
+    if (!value_end.has_value()) {
+        actual_pos = str.size();
+        return false;
+    }
+    if (*value_end) {
+        boost::trim_right(value);
+        return true;
+    }
+
     if (value.empty()) {
         actual_pos = str.find_first_not_of(' ', actual_pos);
     }
+
     for (; actual_pos < str.size(); ++actual_pos) {
         char ch = str[actual_pos];
-        if (ch == '\r') {     // TODO add more forbidden symbols
-            actual_pos += 2;  // skip '\r\n'
-            boost::trim_right(value);
-            return true;
+        if (ch == '\r') {  // TODO add more forbidden symbols
+            if (actual_pos + 2 >= str.size()) {
+                prev_end = str.substr(actual_pos);
+                assert(prev_end.size() <= 2);
+                actual_pos = str.size();
+                return false;
+            }
+            if (str[actual_pos + 1] == '\n' && str[actual_pos + 2] != ' ' && str[actual_pos + 2] != '\t') {
+                actual_pos += 2;  // skip '\r\n'
+                boost::trim_right(value);
+                return true;
+            }
         }
         // TODO add check if buffer is too big
         value += ch;
@@ -97,11 +120,46 @@ bool HeadersBuilder::readValue(const string_view str)
     return false;
 }
 
-bool HeadersBuilder::headersEnd(const string_view str)
+std::optional<bool> HeadersBuilder::handleValueEnd(const string_view str)
+{
+    if (!prev_end.empty()) {
+        if (prev_end.size() + str.size() < 3) [[unlikely]] {
+            prev_end += str;
+            return std::nullopt;
+        }
+        else {
+            if (prev_end.size() == 1) {
+                if (str[0] == '\n' && str[1] != ' ' && str[1] != '\t') {
+                    ++actual_pos;
+                    prev_end.clear();
+                    return true;
+                }
+                value += prev_end;
+                prev_end.clear();
+                return false;
+            }
+            if (prev_end[1] == '\n' && str[0] != ' ' && str[0] != '\t') {
+                prev_end.clear();
+                return true;
+            }
+            value += prev_end;
+            prev_end.clear();
+            return false;
+        }
+    }
+    return false;
+}
+
+std::optional<bool> HeadersBuilder::headersEnd(const string_view str)
 {
     if (actual_part == ActualPart::key && key.empty() && str[actual_pos] == '\r') {
-        actual_pos += 2;  // skip '\r\n'
-        return true;
+        if (actual_pos + 1 >= str.size()) {
+            return std::nullopt;
+        }
+        if (str[actual_pos + 1] == '\n') {
+            actual_pos += 2;  // skip \r\n
+            return true;
+        }
     }
     return false;
 }
