@@ -1,4 +1,5 @@
 add_subdirectory(utils)
 add_subdirectory(request)
+add_subdirectory(response)
 add_subdirectory(logical_controller)
 add_subdirectory(server)
