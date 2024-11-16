@@ -1,0 +1,19 @@
+== Info:   Trying 127.0.0.1:8000...
+== Info: Connected to localhost (127.0.0.1) port 8000 (#0)
+=> Send header, 127 bytes (0x7f)
+0000: GET /init HTTP/1.1
+0014: Host: localhost:8000
+002a: User-Agent: curl/7.84.0
+0043: Accept: application/json
+005d: Content-Type: application/json
+007d: 
+== Info: Mark bundle as not supporting multiuse
+<= Recv header, 24 bytes (0x18)
+0000: HTTP/1.1 404 Not found
+<= Recv header, 25 bytes (0x19)
+0000: Server: Kerl production
+== Info: no chunk, no close, no size. Assume close to signal end
+<= Recv header, 2 bytes (0x2)
+0000: 
+<= Recv data, 0 bytes (0x0)
+== Info: Closing connection 0

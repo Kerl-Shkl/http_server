@@ -84,7 +84,7 @@ void Server::doIO(Connection& connection)
         if (connection.requestCompleted()) {
             auto request = connection.getRequest();
             auto responce = logical_controller.process(request);
-            connection.setResponce(std::move(responce));
+            connection.setResponce(responce.buildMessage());
         }
     }
     if (connection.canWrite()) {

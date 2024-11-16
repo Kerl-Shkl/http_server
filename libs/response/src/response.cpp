@@ -1,29 +1,41 @@
 #include "response.hpp"
+#include <sstream>
 
-void Response::setStatusLine(std::string new_status_line)
+void HttpResponse::setProtocol(std::string new_protocol)
 {
-    status_line = std::move(new_status_line);
+    protocol = std::move(new_protocol);
 }
 
-void Response::addHeader(std::string key, std::string value)
+void HttpResponse::setCode(uint64_t new_code)
+{
+    code = new_code;
+}
+
+void HttpResponse::setStatus(std::string new_status)
+{
+    status = std::move(new_status);
+}
+
+void HttpResponse::addHeader(std::string key, std::string value)
 {
     headers.try_emplace(std::move(key), std::move(value));
 }
-void Response::setBody(std::string new_body)
+void HttpResponse::setBody(std::string new_body)
 {
     body = std::move(new_body);
 }
 
-std::string Response::buildMessage() const
+std::string HttpResponse::buildMessage() const
 {
-    std::string result = status_line;
-    if (!status_line.ends_with("\r\n")) {
-        result += "\r\n";
+    std::stringstream result;
+    result << protocol << " " << code << " " << status;
+    if (!status.ends_with("\r\n")) {
+        result << "\r\n";
     }
     for (const auto& [key, value] : headers) {
-        result += key + ": " + value + "\r\n";  // NOLINT(performance-inefficient-string-concatenation)
+        result << key << ": " << value << "\r\n";  // NOLINT(performance-inefficient-string-concatenation)
     }
-    result += "\r\n";
-    result += body;
-    return result;
+    result << "\r\n";
+    result << body;
+    return result.str();
 }

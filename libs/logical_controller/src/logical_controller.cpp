@@ -1,16 +1,21 @@
 #include "logical_controller.hpp"
+#include "common_responses.hpp"
+
+void LogicalController::addAction(HttpMethod method, std::string target, handler_t handler)
+{
+    auto& target_map = handlers[method];
+    target_map[std::move(target)] = std::move(handler);
+}
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-[[nodiscard]] auto LogicalController::process(HttpRequest request) -> HttpResponse
+[[nodiscard]] HttpResponse LogicalController::process(HttpRequest request)
 {
-    using namespace std::string_literals;
-    std::string result;
-    result += std::to_string(static_cast<int>(request.getMethod()));
-    result += " "s + request.getTarget() + " "s + request.getProtocol() + "\n"s;
-    for (const auto& [key, value] : request.getHeaders()) {
-        result += key + " : "s + value + "\n";  // NOLINT
+    HttpMethod method = request.getMethod();
+    const std::string& target = request.getTarget();
+    auto& target_map = handlers[method];
+    auto iter = target_map.find(target);
+    if (iter == target_map.end()) {
+        return common_response::notFound();
     }
-    result += "\n"s + request.getBody();
-
-    return result;
+    return iter->second(std::move(request));
 }
