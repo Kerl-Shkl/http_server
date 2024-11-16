@@ -13,6 +13,7 @@ public:
     bool isComplete() const noexcept;
     HttpRequest& getRequest() noexcept;
     const HttpRequest& getRequest() const noexcept;
+    void reset();
 
 private:
     void parse();

@@ -23,10 +23,12 @@ void ClientConnection::writeMessage()
     return request_builder.isComplete();
 }
 
-HttpRequest ClientConnection::getRequest()
+HttpRequest ClientConnection::extractRequest()
 {
     assert(requestCompleted());
-    return request_builder.getRequest();
+    auto request = request_builder.getRequest();
+    request_builder.reset();
+    return request;
 }
 
 void ClientConnection::setResponce(std::string responce)

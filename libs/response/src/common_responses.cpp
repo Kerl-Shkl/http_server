@@ -10,7 +10,6 @@ HttpResponse notFound()
     response.setCode(404);
     response.setStatus("Not found");
     response.addHeader("Server", "Kerl production");
-    response.addHeader("Server", "Kerl production");
     response.addHeader("Content-Type", "text/html; charset=UTF-8");
 
     constexpr std::string_view body =

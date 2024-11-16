@@ -82,7 +82,7 @@ void Server::doIO(Connection& connection)
     if (connection.canRead()) {
         connection.readNewMessage();
         if (connection.requestCompleted()) {
-            auto request = connection.getRequest();
+            auto request = connection.extractRequest();
             auto responce = logical_controller.process(request);
             connection.setResponce(responce.buildMessage());
         }

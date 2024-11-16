@@ -19,6 +19,15 @@ const HttpRequest& RequestBuilder::getRequest() const noexcept
     return request;
 }
 
+void RequestBuilder::reset()
+{
+    current_component = CurrentComponent::first_line;
+    request = HttpRequest{};
+    buffer.clear();
+    actual_pos = 0;
+    headers_builder = HeadersBuilder{};
+}
+
 void RequestBuilder::complete(std::string_view new_info)
 {
     buffer += new_info;
