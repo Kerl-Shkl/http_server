@@ -28,7 +28,6 @@ HttpResponse notFound()
         "</html>";
 
     response.setBody(std::string(body));
-    response.addHeader("Content-Length", std::to_string(body.size()));
 
     return response;
 }

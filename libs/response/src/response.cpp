@@ -23,6 +23,7 @@ void HttpResponse::addHeader(std::string key, std::string value)
 void HttpResponse::setBody(std::string new_body)
 {
     body = std::move(new_body);
+    addHeader("Content-Length", std::to_string(body.size()));
 }
 
 std::string HttpResponse::buildMessage() const
