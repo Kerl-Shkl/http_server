@@ -8,8 +8,9 @@
 #include <string>
 #include <sys/socket.h>
 
-Server::Server(LogicalController&& controller)
-: logical_controller{std::move(controller)}
+Server::Server(LogicalController&& controller, short custom_port)
+: port(custom_port)
+, logical_controller{std::move(controller)}
 {
     createEpoll();
     createListenSocket();

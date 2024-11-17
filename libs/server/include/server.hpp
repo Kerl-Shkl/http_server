@@ -10,7 +10,7 @@
 class Server
 {
 public:
-    Server(LogicalController&& controller);
+    Server(LogicalController&& controller, short custom_port = 8000);
     void run();
 
 private:
@@ -27,7 +27,7 @@ private:
     void addConnection();
     void createEpoll();
 
-    static constexpr short port = 8000;  // NOLINT
+    const short port;  // NOLINT
     int listen_sd = 0;
     int epoll_fd = 0;
     bool need_accept = false;

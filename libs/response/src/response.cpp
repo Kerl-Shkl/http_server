@@ -18,7 +18,7 @@ void HttpResponse::setStatus(std::string new_status)
 
 void HttpResponse::addHeader(std::string key, std::string value)
 {
-    headers.try_emplace(std::move(key), std::move(value));
+    headers[std::move(key)] = std::move(value);
 }
 void HttpResponse::setBody(std::string new_body)
 {
