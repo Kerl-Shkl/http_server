@@ -13,8 +13,6 @@ int main()
                                          HttpResponse response;
                                          response.setStatus("OK");
                                          response.setCode(200);
-                                         response.setProtocol("HTTP/1.1");
-                                         response.addHeader("Server", "Kerl production");
                                          response.addHeader("Content-Type", "text/html; charset=UTF-8");
                                          std::ifstream home_file("html_css/home.html");
                                          std::string content((std::istreambuf_iterator<char>(home_file)),
@@ -27,8 +25,6 @@ int main()
             HttpResponse response;
             response.setStatus("OK");
             response.setCode(200);
-            response.setProtocol("HTTP/1.1");
-            response.addHeader("Server", "Kerl production");
             response.addHeader("Content-Type", "text/html; charset=UTF-8");
             std::ifstream home_file("html_css/faq.html");
             std::string content((std::istreambuf_iterator<char>(home_file)),

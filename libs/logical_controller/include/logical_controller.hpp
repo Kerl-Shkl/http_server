@@ -9,11 +9,16 @@ class LogicalController
 {
 public:
     using handler_t = std::function<HttpResponse(HttpRequest)>;
+
+    LogicalController();
     void addAction(HttpMethod method, std::string target, handler_t handler);
 
-    [[nodiscard]] HttpResponse process(HttpRequest request);
+    [[nodiscard]] HttpResponse process(HttpRequest request) const;
 
 private:
+    [[nodiscard]] HttpResponse doProcess(HttpRequest request) const;
+    void addCommonInfo(HttpResponse& response) const;
+
     using handlers_seq = std::map<std::string, handler_t>;
     std::unordered_map<HttpMethod, handlers_seq> handlers;
 };
