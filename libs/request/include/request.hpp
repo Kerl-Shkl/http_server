@@ -38,3 +38,4 @@ private:
     headers_t headers;
     std::string body;
 };
+
