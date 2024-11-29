@@ -10,6 +10,16 @@ void HttpRequest::setTarget(std::string new_target)
     target = std ::move(new_target);
 }
 
+void HttpRequest::setParameters(parameters_t new_parameters)
+{
+    parameters = std::move(new_parameters);
+}
+
+void HttpRequest::setQueries(queries_t new_queries)
+{
+    queries = std::move(new_queries);
+}
+
 void HttpRequest::setProtocol(std::string new_protocol)
 {
     protocol = std::move(new_protocol);
@@ -33,6 +43,16 @@ HttpMethod HttpRequest::getMethod() const noexcept
 const std::string& HttpRequest::getTarget() const noexcept
 {
     return target;
+}
+
+auto HttpRequest::getParameters() const noexcept -> const parameters_t&
+{
+    return parameters;
+}
+
+auto HttpRequest::getQueries() const noexcept -> const queries_t&
+{
+    return queries;
 }
 
 const std::string& HttpRequest::getProtocol() const noexcept

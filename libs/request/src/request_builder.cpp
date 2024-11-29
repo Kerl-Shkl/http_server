@@ -73,8 +73,8 @@ void RequestBuilder::parseFirstLine()
     }
 
     request.setMethod(first_line_parser.getMethod());
-    request.setTarget(first_line_parser.getTarget());
-    request.setProtocol(first_line_parser.getProtocol());
+    request.setTarget(std::move(first_line_parser.getTarget()));
+    request.setProtocol(std::move(first_line_parser.getProtocol()));
 
     actual_pos = first_line_parser.getLineEnd();
     current_component = CurrentComponent::headers;
