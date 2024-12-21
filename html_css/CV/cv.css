@@ -67,13 +67,26 @@ header nav ul {
 
 nav li {
   display: inline;
-  margin-left: 40px;
+  margin-left: 30px;
 }
 
 header a {
+  font-size: 140%;
   color: #FFFFFF;
 }
 
 footer {
   margin-bottom: 5px;
+}
+
+.prof_skill li {
+  margin-top: 10px;
+}
+
+.prof_skill_sub li  {
+  margin-top: 0;
+}
+
+.prof_skill_sub  {
+  max-width: 520px;
 }
