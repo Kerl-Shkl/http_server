@@ -21,6 +21,7 @@ public:
     using EpollConnection::setCanRead;
     using EpollConnection::setCanWrite;
     using EpollConnection::setEvents;
+    using LinuxConnection::closeConnection;
     using LinuxConnection::closed;
     using LinuxConnection::getSocket;
 

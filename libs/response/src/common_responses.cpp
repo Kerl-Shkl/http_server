@@ -20,7 +20,7 @@ HttpResponse notFound()
         "<header>"
         "<h1>Not found</h1>"
         "</header>"
-        "<p>Теперь ты веришь, мистер Буби?</p>"
+        "<p>There is nothing here</p>"
         "</body>"
         "</html>";
 

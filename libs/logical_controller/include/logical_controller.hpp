@@ -13,11 +13,11 @@ public:
     LogicalController();
     void addAction(HttpMethod method, std::string target, handler_t handler);
 
-    [[nodiscard]] HttpResponse process(HttpRequest request) const;
+    [[nodiscard]] HttpResponse process(HttpRequest request) const noexcept;
 
 private:
-    [[nodiscard]] HttpResponse doProcess(HttpRequest request) const;
-    void addCommonInfo(HttpResponse& response) const;
+    [[nodiscard]] HttpResponse doProcess(HttpRequest request) const noexcept;
+    void addCommonInfo(HttpResponse& response) const noexcept;
 
     using handlers_seq = std::map<std::string, handler_t>;
     std::unordered_map<HttpMethod, handlers_seq> handlers;

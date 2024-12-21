@@ -22,14 +22,14 @@ void LogicalController::addAction(HttpMethod method, std::string target, handler
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-[[nodiscard]] HttpResponse LogicalController::process(HttpRequest request) const
+[[nodiscard]] HttpResponse LogicalController::process(HttpRequest request) const noexcept
 {
     HttpResponse response = doProcess(std::move(request));
     addCommonInfo(response);
     return response;
 }
 
-HttpResponse LogicalController::doProcess(HttpRequest request) const
+HttpResponse LogicalController::doProcess(HttpRequest request) const noexcept
 {
     HttpMethod method = request.getMethod();
     const std::string& target = request.getTarget();
@@ -42,7 +42,7 @@ HttpResponse LogicalController::doProcess(HttpRequest request) const
     return iter->second(std::move(request));
 }
 
-void LogicalController::addCommonInfo(HttpResponse& response) const
+void LogicalController::addCommonInfo(HttpResponse& response) const noexcept
 {
     response.setProtocol("HTTP/1.1");
     response.addHeader("Server", "Kerl production");

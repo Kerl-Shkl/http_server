@@ -80,16 +80,22 @@ void Server::returnConnectionToWaiters(Connection& connection)
 
 void Server::doIO(Connection& connection)
 {
-    if (connection.canRead()) {
-        connection.readNewMessage();
-        if (connection.requestCompleted()) {
-            auto request = connection.extractRequest();
-            auto responce = logical_controller.process(request);
-            connection.setResponce(responce.buildMessage());
+    try {
+        if (connection.canRead()) {
+            connection.readNewMessage();
+            if (connection.requestCompleted()) {
+                auto request = connection.extractRequest();
+                auto responce = logical_controller.process(request);
+                connection.setResponce(responce.buildMessage());
+            }
+        }
+        if (connection.canWrite()) {
+            connection.writeMessage();
         }
     }
-    if (connection.canWrite()) {
-        connection.writeMessage();
+    catch (const std::exception& ex) {
+        log.log("IO error", ex.what());
+        connection.closeConnection();
     }
 }
 
