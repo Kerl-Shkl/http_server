@@ -14,7 +14,7 @@ int main()
                                          response.setStatus("OK");
                                          response.setCode(200);
                                          response.addHeader("Content-Type", "text/html; charset=UTF-8");
-                                         std::ifstream home_file("html_css/home.html");
+                                         std::ifstream home_file("html_css/CV/cv.html");
                                          std::string content((std::istreambuf_iterator<char>(home_file)),
                                                              (std::istreambuf_iterator<char>()));
                                          response.setBody(std::move(content));

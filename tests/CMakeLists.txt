@@ -8,4 +8,5 @@ include(GoogleTest)
 
 add_subdirectory(unit_tests/request)
 add_subdirectory(unit_tests/server)
+add_subdirectory(unit_tests/frontend_service)
 add_subdirectory(logical_controller)

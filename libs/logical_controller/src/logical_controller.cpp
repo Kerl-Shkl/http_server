@@ -35,11 +35,26 @@ HttpResponse LogicalController::doProcess(HttpRequest request) const noexcept
     const std::string& target = request.getTarget();
     assert(handlers.contains(method));
     const auto& target_map = handlers.at(method);
-    auto iter = target_map.find(target);
-    if (iter == target_map.end()) {
-        return common_response::notFound();
+    if (auto iter = target_map.find(target); iter != target_map.end()) {
+        return iter->second(std::move(request));
     }
-    return iter->second(std::move(request));
+    log.log("No such target: " + target);
+    auto [content_type, content] = frontend_service.getContent(target);
+    if (!content.empty()) {
+        return contentResponse(std::move(content_type), std::move(content));
+    }
+    log.log("No such content: " + target);
+    return common_response::notFound();
+}
+
+HttpResponse LogicalController::contentResponse(std::string&& content_type, std::string&& content) const
+{
+    HttpResponse response;
+    response.setStatus("OK");
+    response.setCode(200);
+    response.addHeader("Content-Type", std::move(content_type));
+    response.setBody(std::move(content));
+    return response;
 }
 
 void LogicalController::addCommonInfo(HttpResponse& response) const noexcept

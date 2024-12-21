@@ -42,13 +42,13 @@ std::string LinuxConnection::readMessage()
             throw std::runtime_error(std::string("read() error: ") + std::strerror(errno));
         }
         body.write(buff.data(), read_count);
-        log.log("read_count:", read_count);
-        log.log("buffer read:", buff.data(), static_cast<int>(read_count));
     } while (read_count > 0);
     if (read_count == 0) {
         closeConnection();
     }
-    return body.str();
+    auto result = body.str();
+    log.log("read:", result);
+    return result;
 }
 
 std::string_view LinuxConnection::writeMessage(const std::string_view message)
@@ -59,6 +59,5 @@ std::string_view LinuxConnection::writeMessage(const std::string_view message)
         throw std::runtime_error(std::string("write() error: ") + std::strerror(errno));
     }
     std::string_view left = message.substr(writed);
-    log.log("write message", message.substr(0, writed));
     return left;
 }
