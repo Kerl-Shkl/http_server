@@ -10,6 +10,12 @@ class FrontendService
 {
 public:
     FrontendService();
+    FrontendService(FrontendService&&) noexcept;
+    FrontendService& operator=(FrontendService&&) noexcept;
+    ~FrontendService() = default;
+    FrontendService(const FrontendService&) = delete;
+    FrontendService& operator=(const FrontendService&) = delete;
+
     std::pair<std::string, std::string> getContent(const std::string_view target) const;
 
 private:

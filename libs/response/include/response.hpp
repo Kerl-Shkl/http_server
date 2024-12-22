@@ -11,7 +11,7 @@ public:
     void setCode(uint64_t new_code);
     void setStatus(std::string new_status);
     void addHeader(std::string key, std::string value);
-    void setBody(std::string body);
+    void setBody(std::string content_type, std::string body);
 
     std::string buildMessage() const;
 

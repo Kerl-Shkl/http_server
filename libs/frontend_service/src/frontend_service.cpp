@@ -6,6 +6,15 @@ FrontendService::FrontendService()
     collectIndex();
 }
 
+FrontendService& FrontendService::operator=(FrontendService&& rhp) noexcept
+{
+    if (&rhp == this) {
+        return *this;
+    }
+    resource_index = std::move(rhp.resource_index);
+    return *this;
+}
+
 std::pair<std::string, std::string> FrontendService::getContent(const std::string_view target) const
 {
     auto corrected_target = target.starts_with("/") ? target.substr(1) : target;

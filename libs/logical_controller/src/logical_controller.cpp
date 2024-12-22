@@ -2,7 +2,8 @@
 #include "common_responses.hpp"
 #include <cassert>
 
-LogicalController::LogicalController()
+LogicalController::LogicalController(std::shared_ptr<FrontendService> frontend_service)
+: frontend_service(std::move(frontend_service))
 {
     handlers[HttpMethod::GET] = {};
     handlers[HttpMethod::HEAD] = {};
@@ -39,7 +40,7 @@ HttpResponse LogicalController::doProcess(HttpRequest request) const noexcept
         return iter->second(std::move(request));
     }
     log.log("No such target: " + target);
-    auto [content_type, content] = frontend_service.getContent(target);
+    auto [content_type, content] = frontend_service->getContent(target);
     if (!content.empty()) {
         return contentResponse(std::move(content_type), std::move(content));
     }
@@ -52,8 +53,7 @@ HttpResponse LogicalController::contentResponse(std::string&& content_type, std:
     HttpResponse response;
     response.setStatus("OK");
     response.setCode(200);
-    response.addHeader("Content-Type", std::move(content_type));
-    response.setBody(std::move(content));
+    response.setBody(std::move(content_type), std::move(content));
     return response;
 }
 

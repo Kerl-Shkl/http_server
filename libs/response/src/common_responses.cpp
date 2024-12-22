@@ -8,8 +8,6 @@ HttpResponse notFound()
     HttpResponse response;
     response.setCode(404);
     response.setStatus("Not found");
-    response.addHeader("Content-Type", "text/html; charset=UTF-8");
-
     constexpr std::string_view body =
         "<!doctype html>"
         "<html lang=\"en-US\">"
@@ -23,9 +21,7 @@ HttpResponse notFound()
         "<p>There is nothing here</p>"
         "</body>"
         "</html>";
-
-    response.setBody(std::string(body));
-
+    response.setBody("text/html; charset=UTF-8", std::string(body));
     return response;
 }
 

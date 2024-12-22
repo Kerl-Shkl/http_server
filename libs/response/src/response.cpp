@@ -20,10 +20,12 @@ void HttpResponse::addHeader(std::string key, std::string value)
 {
     headers[std::move(key)] = std::move(value);
 }
-void HttpResponse::setBody(std::string new_body)
+
+void HttpResponse::setBody(std::string content_type, std::string new_body)
 {
     body = std::move(new_body);
     addHeader("Content-Length", std::to_string(body.size()));
+    addHeader("Content-Type", std::move(content_type));
 }
 
 std::string HttpResponse::buildMessage() const

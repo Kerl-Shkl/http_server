@@ -3,16 +3,16 @@
 int main()
 {
     try {
-        LogicalController logical_controller;
+        LogicalController logical_controller{std::make_shared<FrontendService>()};
         logical_controller.addAction(HttpMethod::GET, "/home",
                                      [](const HttpRequest& request) -> HttpResponse {
                                          HttpResponse response;
                                          response.setStatus("OK");
                                          response.setCode(200);
+                                         response.setBody("", request.getBody());
                                          for (const auto& [key, value] : request.getHeaders()) {
                                              response.addHeader(key, value);
                                          }
-                                         response.setBody(request.getBody());
                                          return response;
                                      });
         Server server(std::move(logical_controller), 8678);
