@@ -25,6 +25,7 @@ private:
     void addListenToEpoll();
     int acceptConnection();
     void addConnection();
+    // TODO remove connection from epoll
     void createEpoll();
 
     const short port;  // NOLINT

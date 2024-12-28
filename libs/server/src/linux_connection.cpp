@@ -36,7 +36,6 @@ std::string LinuxConnection::readMessage()
         read_count = read(socket, buff.data(), buff.size());
         if (read_count == -1) {
             if (errno == EAGAIN) {
-                log.log("eagain");
                 break;
             }
             throw std::runtime_error(std::string("read() error: ") + std::strerror(errno));

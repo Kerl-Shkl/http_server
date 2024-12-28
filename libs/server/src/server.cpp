@@ -30,6 +30,7 @@ void Server::run()
 
             if (connection.closed()) {
                 log.log("connection closed");
+                // TODO remove from epoll
                 connections.removeNode(connection_node);
             }
             else {
