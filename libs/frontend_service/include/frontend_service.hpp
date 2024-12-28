@@ -25,10 +25,11 @@ private:
     std::unordered_map<std::string, std::filesystem::path> resource_index;
     static constexpr std::string_view resource_dir = "/home/kerl/work/C++/Server/html_css";
     const std::unordered_map<std::string, std::string> extensions_map{
-        {"html", "text/html" },
-        {"jpeg", "image/jpeg"},
-        {"jpg",  "image/jpeg"},
-        {"png",  "image/png" }
+        {"html", "text/html"   },
+        {"jpeg", "image/jpeg"  },
+        {"jpg",  "image/jpeg"  },
+        {"png",  "image/png"   },
+        {"ico",  "image/x-icon"}
     };
 
     FRIEND_TEST(FrontendService, CollectIndex);
