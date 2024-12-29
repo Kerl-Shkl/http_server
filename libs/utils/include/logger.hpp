@@ -12,9 +12,11 @@ public:
     Logger& operator=(Logger&& rhp) noexcept = delete;
     Logger& operator=(const Logger&) = delete;
 
+    void updatePrefix(const std::string_view new_prefix);
     void log(std::string_view str) const noexcept;
     void log(std::string_view str, const char *s, int length) const noexcept;
     void log(std::string_view str, const std::string& value) const noexcept;
+    void log(std::string_view str, const std::string& value, bool message) const noexcept;
     template<typename T>
     void log(std::string_view str, T value) const noexcept;
 

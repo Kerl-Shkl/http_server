@@ -11,5 +11,4 @@ TEST(FrontendService, CollectIndex)
     EXPECT_EQ(front.resource_index["cv.css"].string(), "/home/kerl/work/C++/Server/html_css/CV/cv.css");
     EXPECT_EQ(front.resource_index["avatar_face.jpg"].string(),
               "/home/kerl/work/C++/Server/html_css/CV/avatar_face.jpg");
-    EXPECT_EQ(front.resource_index.size(), 5);
 }

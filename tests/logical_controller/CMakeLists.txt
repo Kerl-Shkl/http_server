@@ -1,5 +1,5 @@
 add_executable(test_server echo_http_server.cpp)
-target_link_libraries(test_server PRIVATE new_server)
+target_link_libraries(test_server PRIVATE server)
 
 find_package(Python REQUIRED)
 

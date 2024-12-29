@@ -7,6 +7,7 @@
 
 LinuxConnection::LinuxConnection(int sock)
 : socket(sock)
+, log("LinuxConnection:" + std::to_string(socket))
 {}
 
 int LinuxConnection::getSocket() const noexcept
@@ -43,7 +44,7 @@ std::string LinuxConnection::readMessage()
         body.write(buff.data(), read_count);
     } while (read_count > 0);
     auto result = body.str();
-    log.log("read:", result);
+    log.log("read:", result, true);
     if (read_count == 0) {
         closeConnection();
     }
