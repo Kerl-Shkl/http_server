@@ -4,8 +4,6 @@
 #include <string>
 #include <unordered_map>
 
-#include <gtest/gtest.h>
-
 class FrontendService
 {
 public:
@@ -31,6 +29,4 @@ private:
         {"png",  "image/png"   },
         {"ico",  "image/x-icon"}
     };
-
-    FRIEND_TEST(FrontendService, CollectIndex);
 };
