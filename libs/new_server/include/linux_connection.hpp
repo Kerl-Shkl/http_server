@@ -20,5 +20,5 @@ public:
 
 private:
     int socket;
-    Logger log{"connection"};
+    Logger log{"LinuxConnection"};
 };

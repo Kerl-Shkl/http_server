@@ -10,11 +10,7 @@ add_subdirectory(libs)
 set(SOURCE_FILES src/main.cpp)
 
 add_executable(exec ${SOURCE_FILES})
-target_link_libraries(exec PRIVATE server)
+target_link_libraries(exec PRIVATE new_server)
 target_include_directories(exec PRIVATE include)
-
-add_executable(alternative src/another_main.cpp)
-target_link_libraries(alternative PRIVATE server)
-target_include_directories(alternative PRIVATE include)
 
 add_subdirectory(tests)

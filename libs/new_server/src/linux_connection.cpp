@@ -42,11 +42,11 @@ std::string LinuxConnection::readMessage()
         }
         body.write(buff.data(), read_count);
     } while (read_count > 0);
+    auto result = body.str();
+    log.log("read:", result);
     if (read_count == 0) {
         closeConnection();
     }
-    auto result = body.str();
-    log.log("read:", result);
     return result;
 }
 
