@@ -3,15 +3,23 @@
 #include <cstring>
 #include <fcntl.h>
 #include <sys/inotify.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
-
-#include <iostream>
 
 ResourceObserver::ResourceObserver(std::string the_resource_dir)
 : resource_dir(std::move(the_resource_dir))
 {
     initInotify();
     addRootWatcher();
+}
+
+std::unordered_set<std::filesystem::path> ResourceObserver::getTrackedDirs() const
+{
+    std::unordered_set<std::filesystem::path> result;
+    for (const auto& node : dirs_wd) {
+        result.insert(node.node_path);
+    }
+    return result;
 }
 
 ResourceObserver::~ResourceObserver()
@@ -51,7 +59,7 @@ void ResourceObserver::deleteDirWatcher(int wd)
 {
     inotify_rm_watch(fd, wd);
     auto& index = dirs_wd.get<0>();
-    auto iter = index.find(0);
+    auto iter = index.find(wd);
     assert(iter != index.end());
     index.erase(iter);
 }
@@ -87,24 +95,17 @@ void ResourceObserver::deleteSubdirWatchers(int wd)
 
 void ResourceObserver::handleIn()
 {
-    constexpr int batch_size = 250;
-    std::vector<char> buffer(batch_size, 0);
-    ssize_t read_count = 0;
-    size_t offset = 0;
-    do {
-        read_count = read(fd, buffer.data() + offset, buffer.size());
-        if (read_count == -1) {
-            if (errno == EAGAIN) {
-                break;
-            }
-            throw std::runtime_error(std::string("1 read from inotify error: ") + std::strerror(errno));
-        }
-        offset += read_count;
-        buffer.resize(buffer.size() + batch_size, 0);
-    } while (read_count > 0);
-    for (size_t i = 0; i < offset;) {
+    unsigned int avail;
+    int ri = ioctl(fd, FIONREAD, &avail);
+    if (ri != 0) {
+        throw std::runtime_error(std::string("ioctl with inotify fd error:") + std::strerror(errno));
+    }
+    std::vector<char> buffer(avail, 0);
+    ssize_t read_count = read(fd, buffer.data(), buffer.size());
+    assert(read_count == avail);
+
+    for (size_t i = 0; i < buffer.size();) {
         auto *event = reinterpret_cast<inotify_event *>(buffer.data() + i);
-        std::cout << "event->name: " << event->name << std::endl;
         handleEvent(*event);
         i += sizeof(inotify_event) + event->len;
     }
@@ -170,14 +171,4 @@ auto ResourceObserver::getNode(const std::filesystem::path& path) -> const Node&
     auto iter = index.find(path);
     assert(iter != index.end());
     return *iter;
-}
-
-void ResourceObserver::print()
-{
-    for (const auto& node : dirs_wd) {
-        std::cout << node.node_path << std::endl;
-        for (const auto& [name, _] : node.childs) {
-            std::cout << "\t" << name << std::endl;
-        }
-    }
 }

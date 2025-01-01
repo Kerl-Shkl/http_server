@@ -8,6 +8,4 @@ function(create_frontend_service_test SOURCE_NAME)
 endfunction()
 
 create_frontend_service_test(collect_index_test.cpp)
-
-add_executable(resource_observer_test resource_observer_test.cpp)
-target_link_libraries(resource_observer_test frontend_service poller)
+create_frontend_service_test(resource_observer_test.cpp)

@@ -21,15 +21,16 @@ class ResourceObserver : public AbstractSerialized
 public:
     ResourceObserver(std::string resource_dir = "/home/kerl/work/C++/Server/html_css");
     ~ResourceObserver() override;
+
     std::filesystem::path getResourcePath(const std::string_view resource);
+    std::unordered_set<std::filesystem::path> getTrackedDirs() const;
+
     void handleIn() override;
     void handleOut() override;
 
     [[nodiscard]] int getFd() const override;
     [[nodiscard]] bool wantIn() const override;
     [[nodiscard]] bool wantOut() const override;
-
-    void print();
 
 private:
     void initInotify();
