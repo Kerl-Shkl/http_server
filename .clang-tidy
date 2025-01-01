@@ -24,6 +24,7 @@ Checks:
   - "-misc-non-private-member-variables-in-classes"
   - "-readability-identifier-length"
   - "-cppcoreguidelines-avoid-const-or-ref-data-members"
+  - "-misc-no-recursion"
 
 FormatStyle: none
 HeaderFileExtensions: ['', 'h', 'hpp', 'hxx']
