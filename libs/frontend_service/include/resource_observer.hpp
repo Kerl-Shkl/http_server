@@ -24,6 +24,9 @@ public:
 
     std::filesystem::path getResourcePath(const std::string_view resource) const;
     std::unordered_set<std::filesystem::path> getTrackedDirs() const;  // for tests
+    using tracking_handler_t = std::function<void()>;
+    int trackChangesInFile(const std::filesystem::path& file, tracking_handler_t handler);
+    void untrackFile(int id);
 
     void handleIn() override;
     void handleOut() override;
@@ -65,6 +68,8 @@ private:
     std::filesystem::path resource_dir;
     std::unordered_map<std::string, std::filesystem::path> resource_index;
     watcher_storage dirs_wd;
+
+    std::unordered_map<int, tracking_handler_t> external_tracking;
     int fd{-1};
 
     Logger logger{"ResourceObserver"};

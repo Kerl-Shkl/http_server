@@ -151,3 +151,59 @@ TEST_F(TrackedDirectory, moveFromAndInSandbox)
     EXPECT_TRUE(dirs.contains(destination));
     EXPECT_EQ(resource_observer->getResourcePath(filename), destination / filename);
 }
+
+TEST_F(TrackedDirectory, trackModify)
+{
+    std::filesystem::path file = sandbox / "file.txt";
+    std::ofstream{file}.put('a');
+
+    int counter{0};
+    resource_observer->trackChangesInFile(file, [&counter]() { ++counter; });
+    std::ofstream{file}.put('b');
+    resource_observer->handleIn();
+
+    EXPECT_EQ(counter, 1);
+}
+
+TEST_F(TrackedDirectory, trackDelete)
+{
+    std::filesystem::path file = sandbox / "file.txt";
+    std::ofstream{file}.put('a');
+    int counter{0};
+    struct Handler
+    {
+        Handler(int& c)
+        : counter(c)
+        {}
+        ~Handler()
+        {
+            ++counter;
+        }
+        void operator()()
+        {}
+        int& counter;
+    };
+
+    Handler handler{counter};
+    resource_observer->trackChangesInFile(file, handler);
+    std::filesystem::remove(file);
+    resource_observer->handleIn();
+
+    EXPECT_EQ(counter, 1);
+}
+
+TEST_F(TrackedDirectory, untrackFile)
+{
+    std::filesystem::path file = sandbox / "file.txt";
+    std::ofstream{file}.put('a');
+
+    int counter{0};
+    int id = resource_observer->trackChangesInFile(file, [&counter]() { ++counter; });
+    std::ofstream{file}.put('b');
+    resource_observer->handleIn();
+    resource_observer->untrackFile(id);
+    std::ofstream{file}.put('c');
+    resource_observer->handleIn();
+
+    EXPECT_EQ(counter, 1);
+}

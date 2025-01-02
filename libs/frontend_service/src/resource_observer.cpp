@@ -15,12 +15,7 @@ ResourceObserver::ResourceObserver(std::string the_resource_dir)
 
 ResourceObserver::~ResourceObserver()
 {
-    if (fd != -1) {
-        for (const auto& node : dirs_wd) {
-            deleteDirWatcher(node.watcher);
-        }
-        close(fd);
-    }
+    close(fd);
 }
 
 std::unordered_set<std::filesystem::path> ResourceObserver::getTrackedDirs() const
@@ -38,6 +33,18 @@ std::filesystem::path ResourceObserver::getResourcePath(const std::string_view r
     auto corrected_target = resource.substr(begin == std::string_view::npos ? 0 : begin);
     auto it = resource_index.find(std::string{corrected_target});
     return (it != resource_index.end()) ? it->second : "";
+}
+
+int ResourceObserver::trackChangesInFile(const std::filesystem::path& file, tracking_handler_t handler)
+{
+    int wd = inotify_add_watch(fd, file.c_str(), IN_DELETE_SELF | IN_MODIFY);
+    external_tracking.insert({wd, std::move(handler)});
+    return wd;
+}
+
+void ResourceObserver::untrackFile(int id)
+{
+    external_tracking.erase(id);
 }
 
 void ResourceObserver::initInotify()
@@ -90,15 +97,13 @@ void ResourceObserver::addSubdirWatchers(const std::filesystem::path& dir, int p
 void ResourceObserver::deleteSubdirWatchers(int wd)
 {
     auto& index = dirs_wd.get<0>();
-    auto iter = index.find(wd);
-    if (iter == index.end()) {
-        return;
+    if (auto iter = index.find(wd); iter != index.end()) {
+        for (const auto& [_, child_wd] : iter->childs) {
+            deleteSubdirWatchers(child_wd);
+        }
+        inotify_rm_watch(fd, wd);
+        index.erase(iter);
     }
-    for (const auto& [_, child_wd] : iter->childs) {
-        deleteSubdirWatchers(child_wd);
-    }
-    inotify_rm_watch(fd, wd);
-    index.erase(iter);
 }
 
 void ResourceObserver::handleIn()
@@ -125,6 +130,7 @@ void ResourceObserver::handleOut()
     assert(false);
 }
 
+// Ugly! Rework soon
 void ResourceObserver::handleEvent(const inotify_event& event)
 {
     if ((event.mask & IN_ISDIR)) {
@@ -139,6 +145,18 @@ void ResourceObserver::handleEvent(const inotify_event& event)
             dirDisappears(event);
         }
         collectResources();
+    }
+    else {
+        if (auto iter = external_tracking.find(event.wd); iter != external_tracking.end()) {
+            if (event.mask & IN_DELETE_SELF) {
+                logger.log("Delete tracking file: ", iter->first);
+                external_tracking.erase(iter);
+            }
+            else {
+                logger.log("Update tracking file: ", iter->first);
+                iter->second();
+            }
+        }
     }
 }
 
