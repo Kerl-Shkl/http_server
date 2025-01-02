@@ -22,8 +22,8 @@ public:
     ResourceObserver(std::string resource_dir = "/home/kerl/work/C++/Server/html_css");
     ~ResourceObserver() override;
 
-    std::filesystem::path getResourcePath(const std::string_view resource);
-    std::unordered_set<std::filesystem::path> getTrackedDirs() const;
+    std::filesystem::path getResourcePath(const std::string_view resource) const;
+    std::unordered_set<std::filesystem::path> getTrackedDirs() const;  // for tests
 
     void handleIn() override;
     void handleOut() override;
@@ -36,11 +36,14 @@ private:
     void initInotify();
     void addRootWatcher();
     void handleEvent(const inotify_event& event);
+    void collectResources();
 
     int createDirWatcher(const char *dir_name);
     void deleteDirWatcher(int wd);
     void addSubdirWatchers(const std::filesystem::path& dir, int wd);
     void deleteSubdirWatchers(int wd);
+    void dirAppears(const inotify_event& event);
+    void dirDisappears(const inotify_event& event);
 
     struct Node;
     const Node& getNode(int wd);

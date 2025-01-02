@@ -1,4 +1,5 @@
 #include "resource_observer.hpp"
+#include <fstream>
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -86,10 +87,12 @@ TEST_F(TrackedDirectory, moveInSandbox)
     std::filesystem::path inner = source / "inner";
     std::filesystem::path destination = start / "new_dir";
     std::filesystem::path updated_inner = destination / "inner";
+    std::string filename = "file.txt";
     bool created = std::filesystem::create_directory(source);
     ASSERT_TRUE(created);
     created = std::filesystem::create_directory(inner);
     ASSERT_TRUE(created);
+    std::ofstream{inner / filename}.put('a');
 
     std::filesystem::rename(source, destination);
     resource_observer->handleIn();
@@ -99,6 +102,7 @@ TEST_F(TrackedDirectory, moveInSandbox)
     EXPECT_TRUE(dirs.contains(start));
     EXPECT_TRUE(dirs.contains(destination));
     EXPECT_TRUE(dirs.contains(updated_inner));
+    EXPECT_EQ(resource_observer->getResourcePath(filename), updated_inner / filename);
 }
 
 TEST_F(TrackedDirectory, moveFromSandbox)
@@ -106,18 +110,22 @@ TEST_F(TrackedDirectory, moveFromSandbox)
     std::filesystem::path source = start / "new_dir";
     std::filesystem::path inner = source / "inner";
     std::filesystem::path destination = sandbox / "destination";
+    std::string filename = "file.txt";
     bool created = std::filesystem::create_directory(source);
     ASSERT_TRUE(created);
     created = std::filesystem::create_directory(inner);
     ASSERT_TRUE(created);
+    std::ofstream{source / filename}.put('a');
 
     resource_observer->handleIn();
+    ASSERT_EQ(resource_observer->getResourcePath(filename), source / filename);
     std::filesystem::rename(source, destination);
     resource_observer->handleIn();
 
     auto dirs = resource_observer->getTrackedDirs();
     EXPECT_EQ(dirs.size(), 1);
     EXPECT_TRUE(dirs.contains(start));
+    EXPECT_EQ(resource_observer->getResourcePath(filename), std::filesystem::path(""));
 }
 
 TEST_F(TrackedDirectory, moveFromAndInSandbox)
@@ -125,10 +133,12 @@ TEST_F(TrackedDirectory, moveFromAndInSandbox)
     std::filesystem::path sub = start / "new_dir";
     std::filesystem::path source = sub / "inner";
     std::filesystem::path destination = start / "destination";
+    std::string filename = "file.txt";
     bool created = std::filesystem::create_directory(sub);
     ASSERT_TRUE(created);
     created = std::filesystem::create_directory(source);
     ASSERT_TRUE(created);
+    std::ofstream{source / filename}.put('a');
 
     resource_observer->handleIn();
     std::filesystem::rename(source, destination);
@@ -139,4 +149,5 @@ TEST_F(TrackedDirectory, moveFromAndInSandbox)
     EXPECT_TRUE(dirs.contains(start));
     EXPECT_TRUE(dirs.contains(sub));
     EXPECT_TRUE(dirs.contains(destination));
+    EXPECT_EQ(resource_observer->getResourcePath(filename), destination / filename);
 }

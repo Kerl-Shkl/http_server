@@ -13,6 +13,16 @@ ResourceObserver::ResourceObserver(std::string the_resource_dir)
     addRootWatcher();
 }
 
+ResourceObserver::~ResourceObserver()
+{
+    if (fd != -1) {
+        for (const auto& node : dirs_wd) {
+            deleteDirWatcher(node.watcher);
+        }
+        close(fd);
+    }
+}
+
 std::unordered_set<std::filesystem::path> ResourceObserver::getTrackedDirs() const
 {
     std::unordered_set<std::filesystem::path> result;
@@ -22,14 +32,12 @@ std::unordered_set<std::filesystem::path> ResourceObserver::getTrackedDirs() con
     return result;
 }
 
-ResourceObserver::~ResourceObserver()
+std::filesystem::path ResourceObserver::getResourcePath(const std::string_view resource) const
 {
-    if (fd != -1) {
-        for (const auto& node : dirs_wd) {
-            deleteDirWatcher(node.watcher);
-        }
-        close(fd);
-    }
+    size_t begin = resource.find_last_of('/');
+    auto corrected_target = resource.substr(begin == std::string_view::npos ? 0 : begin);
+    auto it = resource_index.find(std::string{corrected_target});
+    return (it != resource_index.end()) ? it->second : "";
 }
 
 void ResourceObserver::initInotify()
@@ -119,26 +127,51 @@ void ResourceObserver::handleOut()
 
 void ResourceObserver::handleEvent(const inotify_event& event)
 {
-    if ((event.mask & IN_ISDIR) && (event.mask & (IN_CREATE | IN_MOVED_TO))) {
-        logger.log(std::string("Handle event. Add subdir: ") + event.name +
-                   " wd: " + std::to_string(event.wd));
-        const Node& parent = getNode(event.wd);
-        std::filesystem::path path = parent.node_path / event.name;
-        int wd = createDirWatcher(path.c_str());
-        parent.childs.emplace_back(event.name, wd);
-        addSubdirWatchers(path, wd);
+    if ((event.mask & IN_ISDIR)) {
+        if (event.mask & (IN_CREATE | IN_MOVED_TO)) {
+            logger.log(std::string("Handle event. Add subdir: ") + event.name + " in " +
+                       getNode(event.wd).node_path.string());
+            dirAppears(event);
+        }
+        else if (event.mask & (IN_DELETE | IN_MOVED_FROM)) {
+            logger.log(std::string("Handle event. Remove subdir: ") + event.name + " from " +
+                       getNode(event.wd).node_path.string());
+            dirDisappears(event);
+        }
+        collectResources();
     }
-    else if ((event.mask & IN_ISDIR) && (event.mask & (IN_DELETE | IN_MOVED_FROM))) {
-        logger.log(std::string("Handle event. Remove subdir: ") + event.name +
-                   " wd: " + std::to_string(event.wd));
-        const Node& parent = getNode(event.wd);
-        std::filesystem::path path = parent.node_path / event.name;
-        const Node& deleted = getNode(path);
-        deleteSubdirWatchers(deleted.watcher);
-        auto pos = std::find_if(
-            parent.childs.begin(), parent.childs.end(),
-            [&event](const std::pair<std::string, int>& child) { return child.first == event.name; });
-        parent.childs.erase(pos);
+}
+
+void ResourceObserver::dirAppears(const inotify_event& event)
+{
+    const Node& parent = getNode(event.wd);
+    std::filesystem::path path = parent.node_path / event.name;
+    int wd = createDirWatcher(path.c_str());
+    parent.childs.emplace_back(event.name, wd);
+    addSubdirWatchers(path, wd);
+}
+
+void ResourceObserver::dirDisappears(const inotify_event& event)
+{
+    const Node& parent = getNode(event.wd);
+    std::filesystem::path path = parent.node_path / event.name;
+    const Node& deleted = getNode(path);
+    deleteSubdirWatchers(deleted.watcher);
+    auto pos = std::find_if(
+        parent.childs.begin(), parent.childs.end(),
+        [&event](const std::pair<std::string, int>& child) { return child.first == event.name; });
+    parent.childs.erase(pos);
+}
+
+void ResourceObserver::collectResources()
+{
+    resource_index.clear();
+    namespace fs = std::filesystem;
+    for (const fs::directory_entry& dir_entry : fs::recursive_directory_iterator(resource_dir)) {
+        if (dir_entry.is_regular_file()) {
+            auto path = dir_entry.path();
+            resource_index.emplace(path.filename(), path);
+        }
     }
 }
 
