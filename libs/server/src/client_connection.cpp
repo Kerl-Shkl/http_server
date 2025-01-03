@@ -8,9 +8,15 @@ ClientConnection::ClientConnection(int socket, LogicalController& new_controller
 
 void ClientConnection::handleIn()
 {
-    std::string message = lcon.readMessage();
-    request_builder.complete(message);
-    processRequest();
+    try {
+        std::string message = lcon.readMessage();
+        request_builder.complete(message);
+        processRequest();
+    }
+    catch (const std::exception& exception) {
+        logger.log("handleIn error: ", exception.what());
+        lcon.closeConnection();
+    }
 }
 
 void ClientConnection::handleOut()
