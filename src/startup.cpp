@@ -7,7 +7,9 @@
 Startup::Startup(int argc, char *argv[])  // NOLINT (cppcoreguidelines-avoid-c-arrays)
 {
     namespace opt = boost::program_options;
-    desc.add_options()("resource-dir", opt::value<std::string>(&resource_dir), "directory with resources");
+    desc.add_options()                                                                        //
+        ("resource-dir", opt::value<std::string>(&resource_dir), "directory with resources")  //
+        ("port", opt::value<int>(&port), "port for server");
     opt::store(opt::parse_command_line(argc, argv, desc), vm);
     opt::notify(vm);
 }
@@ -19,7 +21,7 @@ void Startup::start()
     backend = std::make_shared<BackendService>();
     backend->setFrontendService(frontend);
     backend->init();
-    server = std::make_unique<Server>(backend->getLogicalController());
+    server = std::make_unique<Server>(backend->getLogicalController(), port);
 
     run();
 }
@@ -39,7 +41,8 @@ void Startup::initParams()
 {
     handleHelp();
     namespace opt = boost::program_options;
-    if (resource_dir.empty()) {
+    if (resource_dir.empty() || port == -1) {
+        logger.log("Read params from config file");
         try {
             opt::store(opt::parse_config_file<char>("kserver.cfg", desc), vm);
             opt::notify(vm);
@@ -49,6 +52,7 @@ void Startup::initParams()
             std::exit(1);
         }
     }
+    logger.log("Params:", "resource_dir: " + resource_dir + " port: " + std::to_string(port));
 }
 
 void Startup::handleHelp() const
