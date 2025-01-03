@@ -10,7 +10,7 @@
 class FrontendService
 {
 public:
-    FrontendService(std::string resource_dir = "/home/kerl/work/C++/Server/html_css");
+    FrontendService(std::string resource_dir);
     ~FrontendService() = default;
     FrontendService(FrontendService&&) = default;
     FrontendService& operator=(FrontendService&&) = delete;

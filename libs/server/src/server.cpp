@@ -1,17 +1,20 @@
 #include "server.hpp"
+#include "logical_controller.hpp"
 #include <cassert>
 
-Server::Server(LogicalController&& new_contoller, short port)
+Server::Server(std::shared_ptr<LogicalController> new_controller, short port)
 : listener(port, *this)
-, controller(new_contoller)
+, controller(std::move(new_controller))
 {
     poller.addSerialized(&listener);
     logger.log("Start listening. Port: ", listener.port());
 }
 
+Server::~Server() = default;
+
 void Server::addConnection(int socket)
 {
-    auto new_connection = std::make_shared<ClientConnection>(socket, controller);
+    auto new_connection = std::make_shared<ClientConnection>(socket, *controller);
     auto [iter, inserted] = connections.insert(new_connection);
     assert(inserted);
     poller.addSerialized(iter->get());

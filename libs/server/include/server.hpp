@@ -3,14 +3,16 @@
 #include "client_connection.hpp"
 #include "functor_utils.hpp"
 #include "listener.hpp"
-#include "logical_controller.hpp"
 #include "poller.hpp"
 #include <unordered_set>
+
+class LogicalController;
 
 class Server : public ConnectionKeeper
 {
 public:
-    Server(LogicalController&& controller, short port = 8000);
+    Server(std::shared_ptr<LogicalController> controller, short port = 8000);
+    ~Server() override;
     void addConnection(int socket) override;
     void run();
 
@@ -22,6 +24,6 @@ private:
     Poller poller;
     Listener listener;
     connections_t connections;
-    LogicalController controller;
+    std::shared_ptr<LogicalController> controller;
     Logger logger{"Server"};
 };

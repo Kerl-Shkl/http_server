@@ -2,8 +2,7 @@
 #include "common_responses.hpp"
 #include <cassert>
 
-LogicalController::LogicalController(std::shared_ptr<FrontendService> frontend_service)
-: frontend_service(std::move(frontend_service))
+LogicalController::LogicalController()
 {
     handlers[HttpMethod::GET] = {};
     handlers[HttpMethod::HEAD] = {};
@@ -14,6 +13,11 @@ LogicalController::LogicalController(std::shared_ptr<FrontendService> frontend_s
     handlers[HttpMethod::OPTIONS] = {};
     handlers[HttpMethod::TRACE] = {};
     handlers[HttpMethod::PATCH] = {};
+}
+
+void LogicalController::setFrontendService(std::shared_ptr<FrontendService> frontend)
+{
+    frontend_service = std::move(frontend);
 }
 
 void LogicalController::addAction(HttpMethod method, std::string target, handler_t handler)

@@ -7,10 +7,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(libs)
 
-set(SOURCE_FILES src/main.cpp)
+set(SOURCE_FILES src/main.cpp src/startup.cpp)
+
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+find_package(
+  Boost
+  COMPONENTS program_options
+  REQUIRED)
 
 add_executable(exec ${SOURCE_FILES})
-target_link_libraries(exec PRIVATE server)
+target_link_libraries(exec PRIVATE ${Boost_LIBRARIES} server backend_service)
 target_include_directories(exec PRIVATE include)
 
 add_subdirectory(tests)

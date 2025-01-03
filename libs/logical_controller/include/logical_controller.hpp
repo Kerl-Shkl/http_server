@@ -12,7 +12,8 @@ class LogicalController
 public:
     using handler_t = std::function<HttpResponse(HttpRequest)>;
 
-    LogicalController(std::shared_ptr<FrontendService> frontend_service);
+    LogicalController();
+    void setFrontendService(std::shared_ptr<FrontendService> frontend);
     void addAction(HttpMethod method, std::string target, handler_t handler);
 
     [[nodiscard]] HttpResponse process(HttpRequest request) const noexcept;
