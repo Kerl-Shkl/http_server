@@ -25,6 +25,7 @@ Checks:
   - "-readability-identifier-length"
   - "-cppcoreguidelines-avoid-const-or-ref-data-members"
   - "-misc-no-recursion"
+  - "-llvm-include-order"
 
 FormatStyle: none
 HeaderFileExtensions: ['', 'h', 'hpp', 'hxx']

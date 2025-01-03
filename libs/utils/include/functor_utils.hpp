@@ -39,3 +39,38 @@ struct PtrEqualTo
         return lhp.get() == rhp;
     }
 };
+
+struct StringViewHash
+{
+    using is_transparent = void;
+
+    std::size_t operator()(const std::string& con) const
+    {
+        return std::hash<std::string>{}(con);
+    }
+
+    std::size_t operator()(const std::string_view con) const
+    {
+        return std::hash<std::string_view>{}(con);
+    }
+};
+
+struct StringViewEqualTo
+{
+    using is_transparent = void;
+
+    bool operator()(const std::string& lhp, const std::string& rhp) const
+    {
+        return lhp == rhp;
+    }
+
+    bool operator()(const std::string_view lhp, const std::string& rhp) const
+    {
+        return lhp == rhp;
+    }
+
+    bool operator()(const std::string& lhp, const std::string_view rhp) const
+    {
+        return lhp == rhp;
+    }
+};

@@ -7,5 +7,5 @@ function(create_frontend_service_test SOURCE_NAME)
   gtest_discover_tests(${TARGET_NAME})
 endfunction()
 
-create_frontend_service_test(collect_index_test.cpp)
+create_frontend_service_test(frontend_service_test.cpp)
 create_frontend_service_test(resource_observer_test.cpp)

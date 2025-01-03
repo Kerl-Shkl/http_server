@@ -35,7 +35,7 @@ void Logger::log(std::string_view str, const std::string& value) const noexcept
     }
 }
 
-void Logger::log(std::string_view str, const std::string& value, bool message) const noexcept
+void Logger::log(std::string_view str, const std::string_view value, bool message) const noexcept
 {
     using pos_t = std::string_view::size_type;
     out << "[" << prefix << "] " << str << std::endl;
@@ -43,7 +43,7 @@ void Logger::log(std::string_view str, const std::string& value, bool message) c
     std::string_view right_part{value};
     while (!right_part.empty()) {
         pos_t endline = right_part.find_first_of('\n');
-        std::cout << "\t| " << right_part.substr(0, endline) << std::endl;
+        out << "\t| " << right_part.substr(0, endline) << std::endl;
         right_part = (endline == std::string::npos) ? std::string_view{} : right_part.substr(endline + 1);
     }
 }

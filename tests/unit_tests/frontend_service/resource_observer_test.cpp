@@ -102,7 +102,7 @@ TEST_F(TrackedDirectory, moveInSandbox)
     EXPECT_TRUE(dirs.contains(start));
     EXPECT_TRUE(dirs.contains(destination));
     EXPECT_TRUE(dirs.contains(updated_inner));
-    EXPECT_EQ(resource_observer->getResourcePath(filename), updated_inner / filename);
+    EXPECT_EQ(resource_observer->getResourcePath("/" + filename), updated_inner / filename);
 }
 
 TEST_F(TrackedDirectory, moveFromSandbox)
@@ -206,4 +206,16 @@ TEST_F(TrackedDirectory, untrackFile)
     resource_observer->handleIn();
 
     EXPECT_EQ(counter, 1);
+}
+
+TEST_F(TrackedDirectory, fileCreationAndDeletion)
+{
+    std::filesystem::path file = start / "file.txt";
+    std::ofstream{file}.put('a');
+
+    resource_observer->handleIn();
+    EXPECT_EQ(resource_observer->getResourcePath("/file.txt"), file);
+    std::filesystem::remove(file);
+    resource_observer->handleIn();
+    EXPECT_EQ(resource_observer->getResourcePath("/file.txt"), "");
 }

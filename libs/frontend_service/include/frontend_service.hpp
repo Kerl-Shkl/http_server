@@ -1,32 +1,32 @@
 #pragma once
 
+#include "functor_utils.hpp"
 #include <filesystem>
 #include <string>
 #include <unordered_map>
 
+#include "resource_observer.hpp"
+
 class FrontendService
 {
 public:
-    FrontendService();
-    FrontendService(FrontendService&&) noexcept;
-    FrontendService& operator=(FrontendService&&) noexcept;
+    FrontendService(std::string resource_dir = "/home/kerl/work/C++/Server/html_css");
     ~FrontendService() = default;
+    FrontendService(FrontendService&&) = default;
+    FrontendService& operator=(FrontendService&&) = delete;
     FrontendService(const FrontendService&) = delete;
     FrontendService& operator=(const FrontendService&) = delete;
 
     std::pair<std::string, std::string> getContent(const std::string_view target) const;
+    ResourceObserver& getResourceObserver();
+    std::string extensionToContentType(const std::string_view extension) const;
 
 private:
     void collectIndex();
-    std::string extensionToContentType(const std::string& extension) const;
+    void loadExtensions();
 
-    std::unordered_map<std::string, std::filesystem::path> resource_index;
-    static constexpr std::string_view resource_dir = "/home/kerl/work/C++/Server/html_css";
-    const std::unordered_map<std::string, std::string> extensions_map{
-        {"html", "text/html"   },
-        {"jpeg", "image/jpeg"  },
-        {"jpg",  "image/jpeg"  },
-        {"png",  "image/png"   },
-        {"ico",  "image/x-icon"}
-    };
+    std::filesystem::path resource_dir;
+    ResourceObserver resource_observer;
+    std::filesystem::path extension_file;
+    std::unordered_map<std::string, std::string, StringViewHash, StringViewEqualTo> extensions_map;
 };

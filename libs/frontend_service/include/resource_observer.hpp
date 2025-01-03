@@ -1,6 +1,7 @@
 #pragma once
 
 #include "abstract_serialized.hpp"
+#include "functor_utils.hpp"
 #include "logger.hpp"
 #include <filesystem>
 #include <string>
@@ -66,7 +67,7 @@ private:
                       boost::multi_index::member<Node, std::filesystem::path, &Node::node_path>>>>;
 
     std::filesystem::path resource_dir;
-    std::unordered_map<std::string, std::filesystem::path> resource_index;
+    std::unordered_map<std::string, std::filesystem::path, StringViewHash, StringViewEqualTo> resource_index;
     watcher_storage dirs_wd;
 
     std::unordered_map<int, tracking_handler_t> external_tracking;

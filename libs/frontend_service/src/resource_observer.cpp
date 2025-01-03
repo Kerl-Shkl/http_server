@@ -6,11 +6,14 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include <iostream>
+
 ResourceObserver::ResourceObserver(std::string the_resource_dir)
 : resource_dir(std::move(the_resource_dir))
 {
     initInotify();
     addRootWatcher();
+    collectResources();
 }
 
 ResourceObserver::~ResourceObserver()
@@ -30,8 +33,8 @@ std::unordered_set<std::filesystem::path> ResourceObserver::getTrackedDirs() con
 std::filesystem::path ResourceObserver::getResourcePath(const std::string_view resource) const
 {
     size_t begin = resource.find_last_of('/');
-    auto corrected_target = resource.substr(begin == std::string_view::npos ? 0 : begin);
-    auto it = resource_index.find(std::string{corrected_target});
+    auto corrected_target = resource.substr(begin == std::string_view::npos ? 0 : begin + 1);
+    auto it = resource_index.find(corrected_target);
     return (it != resource_index.end()) ? it->second : "";
 }
 
@@ -113,10 +116,18 @@ void ResourceObserver::handleIn()
     if (ri != 0) {
         throw std::runtime_error(std::string("ioctl with inotify fd error:") + std::strerror(errno));
     }
+    if (avail == 0) {
+        return;
+    }
     std::vector<char> buffer(avail, 0);
     ssize_t read_count = read(fd, buffer.data(), buffer.size());
+    if (read_count == -1) {
+        if (errno != EAGAIN) {
+            throw std::runtime_error(std::string("read() error: ") + std::strerror(errno));
+        }
+        return;
+    }
     assert(read_count == avail);
-
     for (size_t i = 0; i < buffer.size();) {
         auto *event = reinterpret_cast<inotify_event *>(buffer.data() + i);
         handleEvent(*event);
@@ -133,29 +144,30 @@ void ResourceObserver::handleOut()
 // Ugly! Rework soon
 void ResourceObserver::handleEvent(const inotify_event& event)
 {
-    if ((event.mask & IN_ISDIR)) {
-        if (event.mask & (IN_CREATE | IN_MOVED_TO)) {
+    if (event.mask & (IN_CREATE | IN_MOVED_TO)) {
+        if (event.mask & IN_ISDIR) {
             logger.log(std::string("Handle event. Add subdir: ") + event.name + " in " +
                        getNode(event.wd).node_path.string());
             dirAppears(event);
-        }
-        else if (event.mask & (IN_DELETE | IN_MOVED_FROM)) {
+        }  // else file created
+        collectResources();
+    }
+    else if (event.mask & (IN_DELETE | IN_MOVED_FROM)) {
+        if (event.mask & IN_ISDIR) {
             logger.log(std::string("Handle event. Remove subdir: ") + event.name + " from " +
                        getNode(event.wd).node_path.string());
             dirDisappears(event);
-        }
+        }  // else file deletion
         collectResources();
     }
-    else {
-        if (auto iter = external_tracking.find(event.wd); iter != external_tracking.end()) {
-            if (event.mask & IN_DELETE_SELF) {
-                logger.log("Delete tracking file: ", iter->first);
-                external_tracking.erase(iter);
-            }
-            else {
-                logger.log("Update tracking file: ", iter->first);
-                iter->second();
-            }
+    else if (auto iter = external_tracking.find(event.wd); iter != external_tracking.end()) {
+        if (event.mask & IN_DELETE_SELF) {
+            logger.log("Delete tracking file: ", iter->first);
+            external_tracking.erase(iter);
+        }
+        else {
+            logger.log("Update tracking file: ", iter->first);
+            iter->second();
         }
     }
 }
