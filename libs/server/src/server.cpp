@@ -1,12 +1,17 @@
 #include "server.hpp"
+#include "frontend_service.hpp"
 #include "logical_controller.hpp"
 #include <cassert>
 
-Server::Server(std::shared_ptr<LogicalController> new_controller, short port)
+Server::Server(std::shared_ptr<LogicalController> control, std::shared_ptr<FrontendService> front, short port)
 : listener(port, *this)
-, controller(std::move(new_controller))
+, controller(std::move(control))
+, frontend(std::move(front))
 {
     poller.addSerialized(&listener);
+    if (frontend != nullptr) {
+        poller.addSerialized(&frontend->getResourceObserver());
+    }
     logger.log("Start listening. Port: ", listener.port());
 }
 

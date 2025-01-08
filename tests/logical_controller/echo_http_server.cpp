@@ -15,7 +15,7 @@ int main()
                                           }
                                           return response;
                                       });
-        Server server(std::move(logical_controller), 8678);
+        Server server(std::move(logical_controller), nullptr, 8678);
         server.run();
     }
     catch (std::exception& e) {

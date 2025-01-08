@@ -7,11 +7,13 @@
 #include <unordered_set>
 
 class LogicalController;
+class FrontendService;
 
 class Server : public ConnectionKeeper
 {
 public:
-    Server(std::shared_ptr<LogicalController> controller, short port = 8000);
+    Server(std::shared_ptr<LogicalController> controller, std::shared_ptr<FrontendService> frontend = nullptr,
+           short port = 8000);
     ~Server() override;
     void addConnection(int socket) override;
     void run();
@@ -25,5 +27,6 @@ private:
     Listener listener;
     connections_t connections;
     std::shared_ptr<LogicalController> controller;
+    std::shared_ptr<FrontendService> frontend;
     Logger logger{"Server"};
 };

@@ -21,7 +21,7 @@ void Startup::start()
     backend = std::make_shared<BackendService>();
     backend->setFrontendService(frontend);
     backend->init();
-    server = std::make_unique<Server>(backend->getLogicalController(), port);
+    server = std::make_unique<Server>(backend->getLogicalController(), frontend, port);
 
     run();
 }
