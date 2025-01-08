@@ -18,20 +18,27 @@ body {
 #content {
   flex-grow: 1;
   padding: 5px;
-  max-width: 900px;
   text-align: justify;
   width: 100%;
-}
 
-.avatar {
-  padding: 10px 10px 20px 10px;
-  float: right;
-  margin: 0px 0px 0px 20px;
-  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
 }
-
-.avatar_caption {
-  text-align: right;
+aside {
+  border: 1px solid green;
+  max-width: 300px;
+  width: 100%;
+}
+article {
+  max-width: 900px;
+  width: 100%;
+  border: 1px solid red;
+}
+.spacer {
+  border: 1px solid green;
+  max-width: 300px;
+  width: 100%;
 }
 
 header {
@@ -41,7 +48,6 @@ header {
   /* background: #F0F8FF; */
   background: #87afaf;
 }
-
 .header_content {
   max-width: 900px;
   min-width: 450px;
@@ -52,7 +58,6 @@ header {
   justify-content: space-between;
   align-items: baseline;
 }
-
 header h1 {
   max-height: 40px;
   display: inline;
@@ -66,12 +71,10 @@ header nav ul {
   padding: 5px 0px 5px 30px;
   display: inline;
 }
-
 nav li {
   display: inline;
   margin-left: 30px;
 }
-
 header a {
   font-size: 140%;
   color: #ffffff;
@@ -79,16 +82,4 @@ header a {
 
 footer {
   margin-bottom: 5px;
-}
-
-.prof_skill li {
-  margin-top: 10px;
-}
-
-.prof_skill_sub li {
-  margin-top: 0;
-}
-
-.prof_skill_sub {
-  max-width: 520px;
 }
