@@ -21,8 +21,16 @@ void ClientConnection::handleIn()
 
 void ClientConnection::handleOut()
 {
-    auto left = lcon.writeMessage(response_message);
-    response_message = std::string{left};
+    try {
+        if (!closed()) {
+            auto left = lcon.writeMessage(response_message);
+            response_message = std::string{left};
+        }
+    }
+    catch (const std::exception& exception) {
+        logger.log("handleOut error: ", exception.what());
+        lcon.closeConnection();
+    }
 }
 
 [[nodiscard]] int ClientConnection::getFd() const

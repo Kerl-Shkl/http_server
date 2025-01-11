@@ -33,7 +33,6 @@ void Server::run()
 
         if (!serialized->wantOut() && !serialized->wantIn()) {
             auto iter = connections.find(serialized);
-            assert(iter != connections.end());
             connections.erase(iter);
             logger.log("Remove connection. Connections count: ", connections.size());
         }
