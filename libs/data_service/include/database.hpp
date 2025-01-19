@@ -21,7 +21,7 @@ public:
     std::vector<std::string> getAllNoteNames();
 
 private:
-    int addNote(const std::string& name, const std::string& body, std::optional<int> section_id);
+    int doAddNote(const std::string& name, const std::string& body, std::optional<int> section_id);
     [[nodiscard]] std::string extractedToString(const pqxx::result& extracted) const;
     void registerPrepared();
 

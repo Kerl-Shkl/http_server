@@ -31,15 +31,15 @@ std::string DataBase::getSection(int id)
 
 int DataBase::addNote(const std::string& name, const std::string& body, int section_id)
 {
-    return addNote(name, body, section_id);
+    return doAddNote(name, body, section_id);
 }
 
 int DataBase::addNote(const std::string& name, const std::string& body)
 {
-    return addNote(name, body, std::nullopt);
+    return doAddNote(name, body, std::nullopt);
 }
 
-int DataBase::addNote(const std::string& name, const std::string& body, std::optional<int> section_id)
+int DataBase::doAddNote(const std::string& name, const std::string& body, std::optional<int> section_id)
 {
     pqxx::work transaction{connection};
     pqxx::row id_row = transaction.exec_prepared1("addNote", name, body, section_id);
