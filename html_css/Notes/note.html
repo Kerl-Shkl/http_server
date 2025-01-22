@@ -5,8 +5,9 @@
     <meta charset="utf-8" />
     <title>Kerl</title>
     <link rel="stylesheet" href="note.css" />
+    <script src="notes.js"></script>
   </head>
-  <body>
+  <body onload="loadMenu()">
     <div class="PageContent">
       <header>
         <div class="header_content">
@@ -22,7 +23,10 @@
       </header>
 
       <div id="content">
-        <aside>aside block. There will be notes list</aside>
+        <aside>
+          <h2>Заметки</h2>
+          <menu id="note_names"></menu>
+        </aside>
         <article>
           <p>There will be note</p>
         </article>

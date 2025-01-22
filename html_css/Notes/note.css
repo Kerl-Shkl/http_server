@@ -26,7 +26,7 @@ body {
   gap: 5px;
 }
 aside {
-  border: 1px solid green;
+  /* border: 1px solid green; */
   max-width: 300px;
   width: 100%;
 }
@@ -39,6 +39,27 @@ article {
   border: 1px solid green;
   max-width: 300px;
   width: 100%;
+}
+
+#note_names {
+  max-height: 500;
+  overflow-y: auto;
+  padding-left: 0px;
+}
+#note_names a {
+  /* background-color: #eee; */
+  border-bottom: 1px solid black;
+  color: black;
+  display: block;
+  padding: 12px 0 12px 2px;
+  text-decoration: none;
+}
+#note_names a:not(.selected):hover {
+  background-color: #ccc;
+}
+#note_names .selected {
+  background-color: #87afaf;
+  color: white;
 }
 
 header {
