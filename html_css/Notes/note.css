@@ -33,10 +33,9 @@ aside {
 article {
   max-width: 900px;
   width: 100%;
-  border: 1px solid red;
+  /* border: 1px solid red; */
 }
 .spacer {
-  border: 1px solid green;
   max-width: 300px;
   width: 100%;
 }
@@ -45,6 +44,7 @@ article {
   max-height: 500;
   overflow-y: auto;
   padding-left: 0px;
+  padding-right: 5px;
 }
 #note_names a {
   /* background-color: #eee; */

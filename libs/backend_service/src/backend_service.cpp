@@ -2,6 +2,7 @@
 #include "database.hpp"
 #include "frontend_service.hpp"
 #include "logical_controller.hpp"
+#include "md4c-html.h"
 
 BackendService::BackendService()
 : controller{std::make_shared<LogicalController>()}
@@ -37,7 +38,7 @@ void BackendService::init()
             const auto& headers = request.getHeaders();
             if (auto it = headers.find("id"); it != headers.end()) {
                 int id = std::stoi(it->second);
-                std::string body = "<code>" + note(id) + "</code>";
+                std::string body = note(id);
                 response.setStatus("OK");
                 response.setCode(200);
                 response.setBody("text/html", std::move(body));
@@ -84,5 +85,12 @@ auto BackendService::noteNamesList() -> json
 
 std::string BackendService::note(int id)
 {
-    return database->getNote(id);
+    std::string md = database->getNote(id);
+    std::string html;
+    auto process = [](const MD_CHAR *text, MD_SIZE size, void *html_string) -> void {
+        auto& html = *static_cast<std::string *>(html_string);
+        html.append(text, size);
+    };
+    md_html(md.data(), md.size(), process, &html, 0, 1);
+    return html;
 }
