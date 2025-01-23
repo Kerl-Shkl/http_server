@@ -18,7 +18,7 @@ public:
     int addNote(const std::string& name, const std::string& body, int section_id);
     std::string getNote(int id);
 
-    std::vector<std::string> getAllNoteNames();
+    std::vector<std::pair<int, std::string>> getAllNoteNames();
 
 private:
     int doAddNote(const std::string& name, const std::string& body, std::optional<int> section_id);

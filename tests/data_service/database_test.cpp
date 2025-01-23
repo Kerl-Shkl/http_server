@@ -124,11 +124,14 @@ TEST_F(TestDB, addAndDeleteNote)
 
 TEST_F(TestDB, getAllNotes)
 {
-    database->addNote(note_name, note_body);
-    database->addNote(note_name2, note_body2);
+    int id = database->addNote(note_name, note_body);
+    int id2 = database->addNote(note_name2, note_body2);
     auto note_names = database->getAllNoteNames();
 
-    std::vector<std::string> expected{note_name, note_name2};
+    std::vector<std::pair<int, std::string>> expected{
+        {id,  note_name },
+        {id2, note_name2}
+    };
     EXPECT_TRUE(std::is_permutation(note_names.begin(), note_names.end(), expected.begin(), expected.end()));
 }
 

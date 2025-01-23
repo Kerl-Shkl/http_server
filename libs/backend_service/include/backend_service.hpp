@@ -21,6 +21,7 @@ private:
     using json = nlohmann::json;
     void addPageAction(const std::string& target, const std::string_view resource);
     json noteNamesList();
+    std::string note(int id);
 
     std::shared_ptr<LogicalController> controller;
     std::shared_ptr<FrontendService> frontend;

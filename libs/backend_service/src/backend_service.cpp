@@ -31,6 +31,23 @@ void BackendService::init()
             response.setBody("application/json", note_names.dump());
             return response;
         });
+    controller->addAction(  //
+        HttpMethod::GET, "/api/note_body", [this](const HttpRequest& request) -> HttpResponse {
+            HttpResponse response;
+            const auto& headers = request.getHeaders();
+            if (auto it = headers.find("id"); it != headers.end()) {
+                int id = std::stoi(it->second);
+                std::string body = "<code>" + note(id) + "</code>";
+                response.setStatus("OK");
+                response.setCode(200);
+                response.setBody("text/html", std::move(body));
+            }
+            else {
+                response.setCode(400);
+                response.setStatus("Bad Request");
+            }
+            return response;
+        });
 }
 
 void BackendService::addPageAction(const std::string& target, const std::string_view resource)
@@ -55,6 +72,17 @@ std::shared_ptr<LogicalController> BackendService::getLogicalController()
 auto BackendService::noteNamesList() -> json
 {
     auto note_names = database->getAllNoteNames();
-    json result = std::move(note_names);
+    json result = {};
+    for (auto& [id, name] : note_names) {
+        json element;
+        element["id"] = id;
+        element["name"] = std::move(name);
+        result.push_back(std::move(element));
+    }
     return result;
+}
+
+std::string BackendService::note(int id)
+{
+    return database->getNote(id);
 }

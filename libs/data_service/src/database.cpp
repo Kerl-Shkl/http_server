@@ -69,14 +69,16 @@ std::string DataBase::getNote(int id)
     return extractedToString(extracted);
 }
 
-std::vector<std::string> DataBase::getAllNoteNames()
+std::vector<std::pair<int, std::string>> DataBase::getAllNoteNames()
 {
     pqxx::nontransaction action{connection};
     pqxx::result name_rows = action.exec_prepared("getAllNoteNames");
-    std::vector<std::string> names;
+    std::vector<std::pair<int, std::string>> names;
     names.reserve(name_rows.size());
-    for (auto name : name_rows) {
-        names.emplace_back(name[0].as<std::string>());
+    for (auto row : name_rows) {
+        int id = row[0].as<int>();
+        auto name = row[1].as<std::string>();
+        names.emplace_back(id, std::move(name));
     }
     return names;
 }
@@ -92,7 +94,7 @@ void DataBase::registerPrepared()
     connection.prepare("deleteNote", "DELETE FROM notes WHERE name = $1");
     connection.prepare("getNoteByName", "SELECT body FROM notes WHERE name = $1;");
     connection.prepare("getNoteById", "SELECT body FROM notes WHERE id = $1;");
-    connection.prepare("getAllNoteNames", "SELECT name FROM notes;");
+    connection.prepare("getAllNoteNames", "SELECT id, name FROM notes;");
 }
 
 [[nodiscard]] std::string DataBase::extractedToString(const pqxx::result& extracted) const
