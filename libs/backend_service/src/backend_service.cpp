@@ -49,6 +49,24 @@ void BackendService::init()
             }
             return response;
         });
+    controller->addAction(  //
+        HttpMethod::POST, "/api/add_note", [this](const HttpRequest& request) -> HttpResponse {
+            HttpResponse response;
+            const auto& headers = request.getHeaders();
+            auto name_it = headers.find("name");
+            auto section_it = headers.find("section_name");
+            const auto& body = request.getBody();  // TODO add std::move (remove const)
+            if (name_it != headers.end() && section_it != headers.end() && !body.empty()) {
+                database->addNote(name_it->second, body, section_it->second);
+                response.setStatus("OK");
+                response.setCode(200);
+            }
+            else {
+                response.setCode(400);
+                response.setStatus("Bad Request");
+            }
+            return response;
+        });
 }
 
 void BackendService::addPageAction(const std::string& target, const std::string_view resource)

@@ -10,7 +10,7 @@ public:
     int addSection(const std::string& section_name);
     void deleteSection(const std::string& section_name);
     std::string getSection(int id);
-    std::optional<int> getSectionId(const std::string& section_name);
+    int getOrAddSection(const std::string& section_name);
     std::optional<int> getSectionIdByNote(int note_id);
 
     int addNote(const std::string& name, const std::string& body);

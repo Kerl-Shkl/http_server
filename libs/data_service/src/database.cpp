@@ -29,12 +29,14 @@ std::string DataBase::getSection(int id)
     return extractedToString(extracted);
 }
 
-std::optional<int> DataBase::getSectionId(const std::string& section_name)
+int DataBase::getOrAddSection(const std::string& section_name)
 {
-    pqxx::nontransaction action{connection};
-    pqxx::result id_row = action.exec_prepared("getSectionId", section_name);
+    pqxx::work transaction{connection};
+    pqxx::result id_row = transaction.exec_prepared("getSectionId", section_name);
     if (id_row.empty()) {
-        return std::nullopt;
+        pqxx::row inserted_id_row = transaction.exec_prepared1("addSection", section_name);
+        transaction.commit();
+        return inserted_id_row[0].as<int>();
     }
     return id_row.front()[0].as<int>();
 }
@@ -61,7 +63,7 @@ int DataBase::addNote(const std::string& name, const std::string& body)
 
 int DataBase::addNote(const std::string& name, const std::string& body, const std::string& section_name)
 {
-    auto section_id = getSectionId(section_name);
+    auto section_id = getOrAddSection(section_name);
     return doAddNote(name, body, section_id);
 }
 
