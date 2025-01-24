@@ -101,6 +101,58 @@ header a {
   color: #ffffff;
 }
 
+.add_note_window {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+.add_note_content {
+  background-color: #fefefe;
+  margin: 30% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: max-content;
+}
+
+#close_add_note {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+#close_add_note:hover,
+#close_add_note:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.add_note_content label,
+.add_note_content .spacer {
+  width: 130px;
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 2px;
+  margin-bottom: 5px;
+}
+
+#send_note {
+  display: block;
+  margin-top: 10px;
+  margin-left: auto;
+  background-color: #87afaf;
+  color: white;
+}
+
 footer {
   margin-bottom: 5px;
 }

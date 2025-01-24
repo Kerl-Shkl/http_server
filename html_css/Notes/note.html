@@ -10,7 +10,7 @@
     <script defer src="katex.min.js"></script>
     <script defer src="auto-render.min.js"></script>
   </head>
-  <body onload="loadMenu()">
+  <body onload="handleLoad()">
     <div class="PageContent">
       <header>
         <div class="header_content">
@@ -29,11 +29,31 @@
         <aside>
           <h2>Заметки</h2>
           <menu id="note_names"></menu>
+          <button id="add_note_btn">Добавить заметку</button>
         </aside>
         <article id="note_body">
           <p>Выберите заметку в меню слева</p>
         </article>
         <div class="spacer"></div>
+      </div>
+
+      <div id="add_note_window" class="add_note_window">
+        <div class="add_note_content">
+          <span id="close_add_note">&times;</span>
+          <h2>Добавление заметки</h2>
+          <div>
+            <label for="nname">Название заметки:</label>
+            <input type="text" id="input_nname" name="nname" />
+            <br />
+            <label for="sname">Название раздела: </label>
+            <input type="text" id="input_sname" name="sname" />
+            <br />
+            <label for="finput">Выберите заметку: </label>
+            <input type="file" id="file_input" name="finput" />
+            <br />
+            <button id="send_note" onclick="sendNote()">Отправить</button>
+          </div>
+        </div>
       </div>
 
       <footer>Почта для связи: kirillshkalin@gmail.com</footer>
