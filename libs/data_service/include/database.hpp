@@ -10,11 +10,14 @@ public:
     int addSection(const std::string& section_name);
     void deleteSection(const std::string& section_name);
     std::string getSection(int id);
+    std::optional<int> getSectionId(const std::string& section_name);
+    std::optional<int> getSectionIdByNote(int note_id);
 
     int addNote(const std::string& name, const std::string& body);
     void deleteNote(const std::string& name);
     std::string getNote(const std::string& name);
 
+    int addNote(const std::string& name, const std::string& body, const std::string& section_name);
     int addNote(const std::string& name, const std::string& body, int section_id);
     std::string getNote(int id);
 

@@ -63,17 +63,22 @@ TEST_F(TestDB, addAndGetSection)
 {
     int section_id = database->addSection(section_name);
     auto selected_name = database->getSection(section_id);
+    auto selected_id = database->getSectionId(section_name);
 
     EXPECT_EQ(section_name, selected_name);
+    EXPECT_EQ(section_id, *selected_id);
 }
 
 TEST_F(TestDB, getNonExistentSection)
 {
     int nonexistent_id = 42;
+    auto nonexistent_name = "nonexistent_name";
 
     auto selected_name = database->getSection(nonexistent_id);
+    auto selected_id = database->getSectionId(nonexistent_name);
 
     EXPECT_TRUE(selected_name.empty());
+    EXPECT_FALSE(selected_id.has_value());
 }
 
 TEST_F(TestDB, addAndDeleteSection)
@@ -109,8 +114,21 @@ TEST_F(TestDB, addNoteWithSection)
     int section_id = database->addSection(section_name);
     int note_id = database->addNote(note_name, note_body, section_id);
     auto body = database->getNote(note_name);
+    auto selected_section = database->getSectionIdByNote(note_id);
 
     EXPECT_EQ(note_body, body);
+    EXPECT_EQ(*selected_section, section_id);
+}
+
+TEST_F(TestDB, addNoteWithSectionName)
+{
+    int section_id = database->addSection(section_name);
+    int note_id = database->addNote(note_name, note_body, section_name);
+    auto body = database->getNote(note_name);
+    auto selected_section = database->getSectionIdByNote(note_id);
+
+    EXPECT_EQ(note_body, body);
+    EXPECT_EQ(*selected_section, section_id);
 }
 
 TEST_F(TestDB, addAndDeleteNote)

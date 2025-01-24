@@ -29,6 +29,26 @@ std::string DataBase::getSection(int id)
     return extractedToString(extracted);
 }
 
+std::optional<int> DataBase::getSectionId(const std::string& section_name)
+{
+    pqxx::nontransaction action{connection};
+    pqxx::result id_row = action.exec_prepared("getSectionId", section_name);
+    if (id_row.empty()) {
+        return std::nullopt;
+    }
+    return id_row.front()[0].as<int>();
+}
+
+std::optional<int> DataBase::getSectionIdByNote(int note_id)
+{
+    pqxx::nontransaction action{connection};
+    pqxx::result id_row = action.exec_prepared("getSectionIdByNote", note_id);
+    if (id_row.empty()) {
+        return std::nullopt;
+    }
+    return id_row.front()[0].as<int>();
+}
+
 int DataBase::addNote(const std::string& name, const std::string& body, int section_id)
 {
     return doAddNote(name, body, section_id);
@@ -37,6 +57,12 @@ int DataBase::addNote(const std::string& name, const std::string& body, int sect
 int DataBase::addNote(const std::string& name, const std::string& body)
 {
     return doAddNote(name, body, std::nullopt);
+}
+
+int DataBase::addNote(const std::string& name, const std::string& body, const std::string& section_name)
+{
+    auto section_id = getSectionId(section_name);
+    return doAddNote(name, body, section_id);
 }
 
 int DataBase::doAddNote(const std::string& name, const std::string& body, std::optional<int> section_id)
@@ -88,7 +114,8 @@ void DataBase::registerPrepared()
     connection.prepare("addSection", "INSERT INTO sections (name) VALUES ($1) RETURNING id");
     connection.prepare("deleteSection", "DELETE FROM sections WHERE name = $1;");
     connection.prepare("getSection", "SELECT name FROM sections WHERE id = $1;");
-
+    connection.prepare("getSectionId", "SELECT id FROM sections WHERE name = $1;");
+    connection.prepare("getSectionIdByNote", "SELECT section_id FROM notes WHERE id = $1;");
     connection.prepare("addNote",
                        "INSERT INTO notes (name, body, section_id) VALUES ($1, $2, $3) RETURNING id;");
     connection.prepare("deleteNote", "DELETE FROM notes WHERE name = $1");
