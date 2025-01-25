@@ -79,7 +79,14 @@ int DataBase::doAddNote(const std::string& name, const std::string& body, std::o
 void DataBase::deleteNote(const std::string& name)
 {
     pqxx::work transaction{connection};
-    transaction.exec_prepared0("deleteNote", name);
+    transaction.exec_prepared0("deleteNoteByName", name);
+    transaction.commit();
+}
+
+void DataBase::deleteNote(int id)
+{
+    pqxx::work transaction{connection};
+    transaction.exec_prepared0("deleteNoteById", id);
     transaction.commit();
 }
 
@@ -120,7 +127,8 @@ void DataBase::registerPrepared()
     connection.prepare("getSectionIdByNote", "SELECT section_id FROM notes WHERE id = $1;");
     connection.prepare("addNote",
                        "INSERT INTO notes (name, body, section_id) VALUES ($1, $2, $3) RETURNING id;");
-    connection.prepare("deleteNote", "DELETE FROM notes WHERE name = $1");
+    connection.prepare("deleteNoteByName", "DELETE FROM notes WHERE name = $1");
+    connection.prepare("deleteNoteById", "DELETE FROM notes WHERE id = $1");
     connection.prepare("getNoteByName", "SELECT body FROM notes WHERE name = $1;");
     connection.prepare("getNoteById", "SELECT body FROM notes WHERE id = $1;");
     connection.prepare("getAllNoteNames", "SELECT id, name FROM notes;");

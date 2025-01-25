@@ -12,6 +12,12 @@ function changeSelected(new_element)
 {
     if (selected) {
         selected.classList.remove("selected");
+    } else {
+    }
+    if (new_element) {
+        document.getElementById("delete_note").disabled = false;
+    } else {
+        document.getElementById("delete_note").disabled = true;
     }
     selected = new_element;
     selected.classList.add("selected");
@@ -45,6 +51,7 @@ function handleLoad()
 {
     loadMenu();
     setupAddNoteWindow();
+    setupSureDeleteWindow();
 }
 
 async function loadMenu()
@@ -53,8 +60,9 @@ async function loadMenu()
     const json = await response.json();
     console.log(json);
     menu_items.clear();
-
     var menu = document.getElementById("note_names");
+    menu.replaceChildren();
+
     for (const element of json) {
         var new_item = document.createElement("a");
         new_item.appendChild(document.createTextNode(element.name));
@@ -82,6 +90,30 @@ function setupAddNoteWindow()
     }
 }
 
+function setupSureDeleteWindow()
+{
+    var delete_window = document.getElementById("sure_delete_window");
+    var open_btn = document.getElementById("delete_note");
+    var close_btn = document.getElementById("close_delete_note");
+    var note_name = document.getElementById("delete_note_name")
+    if (!selected) {
+        open_btn.disabled = true;
+    }
+    open_btn.onclick = function() {
+        delete_window.style.display = "block";
+        note_name.innerHTML = selected.text;
+        console.log(selected.text);
+    }
+    close_btn.onclick = function() {
+        closeDeleteWindow();
+    }
+    window.onclick=function(event) {
+        if (event.target == delete_window) {
+            closeDeleteWindow();
+        }
+    }
+}
+
 function sendNote() {
     var note_name = document.getElementById("input_nname").value;
     if (!note_name) {
@@ -104,11 +136,29 @@ function sendNote() {
         })
         if (!response.ok) {
             alert("Во время отправки заметки произошла ошибка " , response.status , response.statusText);
+        } else {
+            loadMenu();
         }
     }
     reader.onerror = (e) => alert(e.target.error.name);
     reader.readAsText(finput.files[0]);
     closeAddNoteWindow();
+}
+
+async function deleteNote() {
+    var note_id = menu_items.get(selected);
+    const response = await fetch("/api/delete_note", {
+        method: "delete",
+        headers: {
+            'id': note_id,
+        },
+    })
+    if (!response.ok) {
+        alert("Во время удаления заметки произошла ошибка" , response.status , response.statusText);
+    } else {
+        loadMenu();
+    }
+    closeDeleteWindow();
 }
 
 function closeAddNoteWindow() {
@@ -117,4 +167,10 @@ function closeAddNoteWindow() {
     document.getElementById("file_input").value = "";
     var add_window = document.getElementById("add_note_window");
     add_window.style.display = "none";
+}
+
+function closeDeleteWindow() {
+    document.getElementById("delete_note_name").innerHTML = "";
+    var delete_window = document.getElementById("sure_delete_window");
+    delete_window.style.display = "none";
 }

@@ -29,7 +29,10 @@
         <aside>
           <h2>Заметки</h2>
           <menu id="note_names"></menu>
-          <button id="add_note_btn">Добавить заметку</button>
+          <div class="control_panel">
+            <button id="add_note_btn">Добавить</button>
+            <button id="delete_note">Удалить</button>
+          </div>
         </aside>
         <article id="note_body">
           <p>Выберите заметку в меню слева</p>
@@ -37,9 +40,9 @@
         <div class="spacer"></div>
       </div>
 
-      <div id="add_note_window" class="add_note_window">
-        <div class="add_note_content">
-          <span id="close_add_note">&times;</span>
+      <div id="add_note_window" class="add_note_window modal_window">
+        <div class="modal_content">
+          <span id="close_add_note" class="close_modal">&times;</span>
           <h2>Добавление заметки</h2>
           <div>
             <label for="nname">Название заметки:</label>
@@ -53,6 +56,21 @@
             <br />
             <button id="send_note" onclick="sendNote()">Отправить</button>
           </div>
+        </div>
+      </div>
+
+      <div id="sure_delete_window" class="modal_window">
+        <div class="modal_content">
+          <span id="close_delete_note" class="close_modal">&times;</span>
+          <h2>Удаление заметки</h2>
+          <p>
+            Вы уверены, что хотите удалить заметку
+            <span id="delete_note_name"></span>
+          </p>
+          <button id="confirm_delete" onclick="deleteNote()">Удалить</button>
+          <button id="cancel_delte" onclick="closeDeleteWindow()">
+            Отмена
+          </button>
         </div>
       </div>
 

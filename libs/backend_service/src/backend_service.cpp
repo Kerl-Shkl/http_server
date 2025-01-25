@@ -37,11 +37,17 @@ void BackendService::init()
             HttpResponse response;
             const auto& headers = request.getHeaders();
             if (auto it = headers.find("id"); it != headers.end()) {
-                int id = std::stoi(it->second);
-                std::string body = note(id);
-                response.setStatus("OK");
-                response.setCode(200);
-                response.setBody("text/html", std::move(body));
+                try {
+                    int id = std::stoi(it->second);
+                    std::string body = note(id);
+                    response.setStatus("OK");
+                    response.setCode(200);
+                    response.setBody("text/html", std::move(body));
+                }
+                catch (const std::exception& ex) {
+                    response.setCode(400);
+                    response.setStatus("Bad Request");
+                }
             }
             else {
                 response.setCode(400);
@@ -58,14 +64,46 @@ void BackendService::init()
             const auto& body = request.getBody();  // TODO add std::move (remove const)
             if (name_it != headers.end() && section_it != headers.end() && !body.empty()) {
                 database->addNote(name_it->second, body, section_it->second);
-                response.setStatus("OK");
                 response.setCode(200);
+                response.setStatus("OK");
             }
             else {
                 response.setCode(400);
                 response.setStatus("Bad Request");
             }
             return response;
+        });
+    controller->addAction(  //
+        HttpMethod::DELETE, "/api/delete_note", [this](const HttpRequest& request) -> HttpResponse {
+            HttpResponse response;
+            const auto& headers = request.getHeaders();
+            if (auto it = headers.find("id"); it != headers.end()) {
+                int id;
+                try {
+                    id = std::stoi(it->second);
+                }
+                catch (const std::exception& ex) {
+                    response.setCode(400);
+                    response.setStatus("Bad Request");
+                    return response;
+                }
+                try {
+                    database->deleteNote(id);
+                    response.setCode(200);
+                    response.setStatus("OK");
+                    return response;
+                }
+                catch (const std::exception& ex) {
+                    response.setCode(507);
+                    response.setStatus("Insufficient Storage");
+                    return response;
+                }
+            }
+            else {
+                response.setCode(400);
+                response.setStatus("Bad Request");
+                return response;
+            }
         });
 }
 

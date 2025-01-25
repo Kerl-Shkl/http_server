@@ -127,10 +127,19 @@ TEST_F(TestDB, addNoteWithSectionName)
     EXPECT_EQ(*selected_section, section_id);
 }
 
-TEST_F(TestDB, addAndDeleteNote)
+TEST_F(TestDB, addAndDeleteNoteByName)
 {
     int note_id = database->addNote(note_name, note_body);
     database->deleteNote(note_name);
+    auto body = database->getNote(note_name);
+
+    EXPECT_TRUE(body.empty());
+}
+
+TEST_F(TestDB, addAndDeleteNoteById)
+{
+    int note_id = database->addNote(note_name, note_body);
+    database->deleteNote(note_id);
     auto body = database->getNote(note_name);
 
     EXPECT_TRUE(body.empty());

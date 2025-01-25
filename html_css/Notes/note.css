@@ -33,6 +33,7 @@ aside {
 article {
   max-width: 900px;
   width: 100%;
+  overflow-x: auto;
   /* border: 1px solid red; */
 }
 .spacer {
@@ -101,7 +102,7 @@ header a {
   color: #ffffff;
 }
 
-.add_note_window {
+.modal_window {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
@@ -114,7 +115,7 @@ header a {
   background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
 }
 
-.add_note_content {
+.modal_content {
   background-color: #fefefe;
   margin: 10% auto 0 auto; /* 15% from the top and centered */
   padding: 20px;
@@ -122,22 +123,22 @@ header a {
   width: max-content;
 }
 
-#close_add_note {
+.close_modal {
   color: #aaa;
   float: right;
   font-size: 28px;
   font-weight: bold;
 }
 
-#close_add_note:hover,
-#close_add_note:focus {
+.close_modal:hover,
+.close_modal:focus {
   color: black;
   text-decoration: none;
   cursor: pointer;
 }
 
-.add_note_content label,
-.add_note_content .spacer {
+.modal_content label,
+.modal_content .spacer {
   width: 130px;
   display: inline-block;
   vertical-align: top;
@@ -151,6 +152,10 @@ header a {
   margin-left: auto;
   background-color: #87afaf;
   color: white;
+}
+
+#delete_note_name {
+  font-weight: bold;
 }
 
 footer {

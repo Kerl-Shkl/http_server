@@ -15,6 +15,7 @@ public:
 
     int addNote(const std::string& name, const std::string& body);
     void deleteNote(const std::string& name);
+    void deleteNote(int id);
     std::string getNote(const std::string& name);
 
     int addNote(const std::string& name, const std::string& body, const std::string& section_name);
