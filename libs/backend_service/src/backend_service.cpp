@@ -142,11 +142,25 @@ auto BackendService::noteNamesList() -> json
 std::string BackendService::note(int id)
 {
     std::string md = database->getNote(id);
-    std::string html;
-    auto process = [](const MD_CHAR *text, MD_SIZE size, void *html_string) -> void {
-        auto& html = *static_cast<std::string *>(html_string);
-        html.append(text, size);
+    std::pair<std::stringstream, bool> process_field;
+    auto process = [](const MD_CHAR *text, MD_SIZE size, void *field) -> void {
+        auto& [out_html, display_opened] = *static_cast<std::pair<std::stringstream, bool> *>(field);
+        std::string_view new_batch{text, size};
+        if (new_batch == "<x-equation>") {
+            display_opened = false;
+            out_html << "$";
+        }
+        else if (new_batch == R"(<x-equation type="display">)") {
+            display_opened = true;
+            out_html << "$$";
+        }
+        else if (new_batch == "</x-equation>") {
+            out_html << (display_opened ? "$$" : "$");
+        }
+        else {
+            out_html << new_batch;
+        }
     };
-    md_html(md.data(), md.size(), process, &html, 0, 1);
-    return html;
+    md_html(md.data(), md.size(), process, &process_field, MD_FLAG_LATEXMATHSPANS, 1);
+    return process_field.first.str();
 }
