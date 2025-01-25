@@ -56,6 +56,30 @@ void BackendService::init()
             return response;
         });
     controller->addAction(  //
+        HttpMethod::GET, "/api/raw_note", [this](const HttpRequest& request) -> HttpResponse {
+            HttpResponse response;
+            const auto& headers = request.getHeaders();
+            if (auto it = headers.find("id"); it != headers.end()) {
+                try {
+                    int id = std::stoi(it->second);
+                    auto [name, body] = database->getNoteWithName(id);
+                    response.setStatus("OK");
+                    response.setCode(200);
+                    response.addHeader("name", std::move(name));
+                    response.setBody("text/plain", std::move(body));
+                }
+                catch (const std::exception& ex) {
+                    response.setCode(400);
+                    response.setStatus("Bad Request");
+                }
+            }
+            else {
+                response.setCode(400);
+                response.setStatus("Bad Request");
+            }
+            return response;
+        });
+    controller->addAction(  //
         HttpMethod::POST, "/api/add_note", [this](const HttpRequest& request) -> HttpResponse {
             HttpResponse response;
             const auto& headers = request.getHeaders();

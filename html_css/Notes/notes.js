@@ -12,12 +12,13 @@ function changeSelected(new_element)
 {
     if (selected) {
         selected.classList.remove("selected");
-    } else {
     }
     if (new_element) {
         document.getElementById("delete_note").disabled = false;
+        document.getElementById("download_note").disabled = false;
     } else {
         document.getElementById("delete_note").disabled = true;
+        document.getElementById("download_note").disabled = true;
     }
     selected = new_element;
     selected.classList.add("selected");
@@ -143,6 +144,33 @@ function sendNote() {
     reader.onerror = (e) => alert(e.target.error.name);
     reader.readAsText(finput.files[0]);
     closeAddNoteWindow();
+}
+
+async function downloadNote()
+{
+    var note_id = menu_items.get(selected);
+    const response = await fetch("/api/raw_note", {
+        headers: {
+            "id": note_id
+        }
+    });
+    if (response.ok) {
+      const note_body = await response.text();
+      var note_name = await response.headers.get("name");
+      if (!note_name) {
+          note_name = "note.md";
+      } else {
+          note_name += ".md";
+      }
+      const blob = new Blob([note_body], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = note_name;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } else {
+        alert("Во время скачивания заметки произошла ошибка" , await response.status , await response.statusText);
+    }
 }
 
 async function deleteNote() {

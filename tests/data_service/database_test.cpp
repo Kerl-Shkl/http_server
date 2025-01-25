@@ -105,6 +105,15 @@ TEST_F(TestDB, getNonExistentNote)
     EXPECT_TRUE(body.empty());
 }
 
+TEST_F(TestDB, addAndGetNoteWithName)
+{
+    int note_id = database->addNote(note_name, note_body);
+    auto [selected_name, selected_body] = database->getNoteWithName(note_id);
+
+    EXPECT_EQ(note_name, selected_name);
+    EXPECT_EQ(note_body, selected_body);
+}
+
 TEST_F(TestDB, addNoteWithSection)
 {
     int section_id = database->addSection(section_name);
