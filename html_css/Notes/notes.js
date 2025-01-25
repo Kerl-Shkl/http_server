@@ -91,8 +91,20 @@ function sendNote() {
     var section_name = document.getElementById("input_sname").value;
     var finput = document.getElementById("file_input");
     let reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         console.log(e.target.result);
+        const response = await fetch("/api/add_note", {
+            method: "post",
+            headers: {
+                'Content-Type': 'text/html',
+                'name': note_name,
+                'section_name': section_name
+            },
+            body: e.target.result
+        })
+        if (!response.ok) {
+            alert("Во время отправки заметки произошла ошибка " , response.status , response.statusText);
+        }
     }
     reader.onerror = (e) => alert(e.target.error.name);
     reader.readAsText(finput.files[0]);
