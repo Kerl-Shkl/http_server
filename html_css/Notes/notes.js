@@ -64,6 +64,9 @@ async function loadMenu()
     var menu = document.getElementById("note_names");
     menu.replaceChildren();
 
+    if (!json) {
+        return
+    }
     for (const element of json) {
         var new_item = document.createElement("a");
         new_item.appendChild(document.createTextNode(element.name));
@@ -129,11 +132,9 @@ function sendNote() {
         const response = await fetch("/api/add_note", {
             method: "post",
             headers: {
-                'Content-Type': 'text/html',
-                'name': note_name,
-                'section_name': section_name
+                'Content-Type': 'application/json',
             },
-            body: e.target.result
+            body: JSON.stringify({name: note_name, section_name: section_name, body: e.target.result})
         })
         if (!response.ok) {
             alert("Во время отправки заметки произошла ошибка " , response.status , response.statusText);

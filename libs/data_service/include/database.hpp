@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <pqxx/pqxx>
 #include <string>
 

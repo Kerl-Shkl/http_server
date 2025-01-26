@@ -5,3 +5,6 @@ target_link_libraries(
   backend_service PUBLIC logical_controller frontend_service
                          nlohmann_json::nlohmann_json data_service md4c-html)
 target_include_directories(backend_service PUBLIC include)
+target_include_directories(
+  backend_service PRIVATE ${CMAKE_SOURCE_DIR}/libs/md4c/md2html
+                          ${CMAKE_SOURCE_DIR}/libs/md4c/src)
