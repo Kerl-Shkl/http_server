@@ -1,4 +1,4 @@
-set(SOURCE_FILES src/linux_connection.cpp src/client_connection.cpp
+set(SOURCE_FILES src/client_connection.cpp
                  src/listener.cpp src/server.cpp)
 
 add_library(server ${SOURCE_FILES})

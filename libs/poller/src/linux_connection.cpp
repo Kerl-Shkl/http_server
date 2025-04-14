@@ -1,14 +1,25 @@
 #include "linux_connection.hpp"
 #include "stdexcept"
 #include <array>
+#include <cassert>
 #include <cstring>
 #include <sstream>
 #include <unistd.h>
+
+LinuxConnection::LinuxConnection()
+: log("LinuxConnection: ?")
+{}
 
 LinuxConnection::LinuxConnection(int sock)
 : socket(sock)
 , log("LinuxConnection:" + std::to_string(socket))
 {}
+
+void LinuxConnection::setSocket(int s) noexcept
+{
+    assert(socket == -1);
+    socket = s;
+}
 
 int LinuxConnection::getSocket() const noexcept
 {

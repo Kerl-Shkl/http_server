@@ -5,6 +5,7 @@
 class LinuxConnection
 {
 public:
+    LinuxConnection();
     explicit LinuxConnection(int sock);
     virtual ~LinuxConnection() = default;
     LinuxConnection(LinuxConnection&&) = default;
@@ -12,6 +13,7 @@ public:
     LinuxConnection(const LinuxConnection&) = delete;
     LinuxConnection& operator=(const LinuxConnection&) = delete;
 
+    void setSocket(int s) noexcept;
     [[nodiscard]] int getSocket() const noexcept;
     [[nodiscard]] bool closed() const noexcept;
     void closeConnection() noexcept;
@@ -19,6 +21,6 @@ public:
     virtual std::string_view writeMessage(const std::string_view message);
 
 private:
-    int socket;
+    int socket = -1;
     Logger log;
 };

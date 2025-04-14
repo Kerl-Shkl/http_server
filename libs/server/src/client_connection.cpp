@@ -56,7 +56,7 @@ void ClientConnection::processRequest()
 
 [[nodiscard]] bool ClientConnection::wantOut() const
 {
-    return !response_message.empty();
+    return !closed() && !response_message.empty();
 }
 
 [[nodiscard]] bool ClientConnection::closed() const
