@@ -7,10 +7,3 @@ add_subdirectory(backend_service)
 add_subdirectory(server)
 add_subdirectory(frontend_service)
 add_subdirectory(data_service)
-
-set(JSON_BuildTests
-    OFF
-    CACHE INTERNAL "")
-add_subdirectory(nlohmann_json)
-
-add_subdirectory(md4c)

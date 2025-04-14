@@ -5,6 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+add_subdirectory(third_party)
 add_subdirectory(libs)
 
 set(SOURCE_FILES src/main.cpp src/startup.cpp)
