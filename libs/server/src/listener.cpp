@@ -39,17 +39,17 @@ void Listener::handleIn()
 {
     sockaddr_in addr{};
     socklen_t addrlen = sizeof(addr);
-    int socket = accept(fd, reinterpret_cast<sockaddr *>(&addr), &addrlen);
-    if (socket == -1) {
+    int socket_fd = accept(fd, reinterpret_cast<sockaddr *>(&addr), &addrlen);
+    if (socket_fd == -1) {
         if (errno == EAGAIN) {
             return;
         }
         throw std::runtime_error(std::string("accept() error: ") + std::strerror(errno));
     }
-    int flags = fcntl(socket, F_GETFL);
-    fcntl(socket, F_SETFL, flags | O_NONBLOCK);
-    logger.log("Accept new connection. fd: ", socket);
-    conkeeper.addConnection(socket);
+    int flags = fcntl(socket_fd, F_GETFL);
+    fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+    logger.log("Accept new connection. fd: ", socket_fd);
+    conkeeper.addConnection(socket_fd);
 }
 
 void Listener::handleOut()

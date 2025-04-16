@@ -1,6 +1,7 @@
 #include "bot_communicator.hpp"
 #include "permissions_controller.hpp"
 #include <algorithm>
+#include <fcntl.h>
 #include <iterator>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -36,6 +37,8 @@ int BotCommunicator::openSocket() const
     if (conn_res < 0) {
         throw std::runtime_error{"Can't connect unix socket for tg bot"};
     }
+    int flags = fcntl(sockfd, F_GETFL);
+    fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
     return sockfd;
 }
 

@@ -1,0 +1,10 @@
+function(create_poller_test SOURCE_NAME)
+  get_filename_component(TARGET_NAME ${SOURCE_NAME} NAME_WE)
+  add_executable(${TARGET_NAME})
+  target_sources(${TARGET_NAME} PRIVATE ${SOURCE_NAME})
+  target_link_libraries(${TARGET_NAME} PRIVATE gtest gtest_main
+                                               poller)
+  gtest_discover_tests(${TARGET_NAME})
+endfunction()
+
+create_poller_test(linux_connection_test.cpp)

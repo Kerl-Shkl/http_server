@@ -10,7 +10,7 @@ class LinuxConnection
 public:
     LinuxConnection();
     explicit LinuxConnection(int sock);
-    virtual ~LinuxConnection() = default;
+    ~LinuxConnection() = default;
     LinuxConnection(LinuxConnection&&) = default;
     LinuxConnection& operator=(LinuxConnection&&) = delete;
     LinuxConnection(const LinuxConnection&) = delete;
