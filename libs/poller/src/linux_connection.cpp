@@ -62,6 +62,32 @@ std::string LinuxConnection::readMessage()
     return result;
 }
 
+std::vector<uint8_t> LinuxConnection::readBuffer()
+{
+    constexpr int batch_size = 256;
+    size_t fullness = 0;
+    std::vector<uint8_t> buff(batch_size, 0);
+    ssize_t read_count{};
+    do {
+        assert(fullness < buff.size());
+        read_count = read(socket, buff.data() + fullness, buff.size() - fullness);
+        if (read_count == -1) {
+            if (errno == EAGAIN) {
+                break;
+            }
+            throw std::runtime_error(std::string("read() error: ") + std::strerror(errno));
+        }
+        fullness += read_count;
+        buff.resize(fullness + batch_size);
+    } while (read_count > 0);
+    buff.resize(fullness);
+    log.log("read buffer. buffer_size: ", buff.size());
+    if (read_count == 0) {
+        closeConnection();
+    }
+    return buff;
+}
+
 std::string_view LinuxConnection::writeMessage(const std::string_view message)
 {
     // NOLINTNEXTLINE(cppcoreguidelines-narrowing-conversions, bugprone-narrowing-conversions)
@@ -69,6 +95,15 @@ std::string_view LinuxConnection::writeMessage(const std::string_view message)
     if (writed == -1) {
         throw std::runtime_error(std::string("write() error: ") + std::strerror(errno));
     }
-    std::string_view left = message.substr(writed);
-    return left;
+    return message.substr(writed);
+}
+
+int LinuxConnection::writeBuffer(const std::span<uint8_t> buffer)
+{
+    // NOLINTNEXTLINE(cppcoreguidelines-narrowing-conversions, bugprone-narrowing-conversions)
+    int writed = write(socket, buffer.data(), buffer.size());
+    if (writed == -1) {
+        throw std::runtime_error(std::string("write() error: ") + std::strerror(errno));
+    }
+    return writed;
 }

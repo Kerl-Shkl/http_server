@@ -1,5 +1,7 @@
 #include "bot_communicator.hpp"
 #include "permissions_controller.hpp"
+#include <algorithm>
+#include <iterator>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -9,6 +11,13 @@ BotCommunicator::BotCommunicator(PermissionsController& controller)
 {
     int socket_fd = openSocket();
     lcon.setSocket(socket_fd);
+}
+
+void BotCommunicator::askRequest(const BotRequest& request)
+{
+    auto serialized = serializeRequest(request);
+    std::ranges::copy(serialized, std::back_inserter(write_buffer));
+    // TODO updateSerializedMode
 }
 
 int BotCommunicator::openSocket() const
@@ -33,8 +42,13 @@ int BotCommunicator::openSocket() const
 void BotCommunicator::handleIn()
 {
     try {
-        std::string message = lcon.readMessage();
-        // TODO convert message to response
+        std::vector<uint8_t> readed = lcon.readBuffer();
+        std::ranges::copy(readed, std::back_inserter(read_buffer));
+        while (read_buffer.size() > sizeof(BotResponse)) {
+            auto response = parseResponse(read_buffer);
+            permissions_controller.handleResponse(response);
+            read_buffer.erase(read_buffer.begin(), read_buffer.begin() + sizeof(BotResponse));
+        }
     }
     catch (const std::exception& exception) {
         logger.log("handleIn error: ", exception.what());
@@ -46,9 +60,8 @@ void BotCommunicator::handleOut()
 {
     try {
         if (!lcon.closed()) {
-            // TODO add write another request
-            // auto left = lcon.writeMessage();
-            // response_message = std::string{left};
+            int writted = lcon.writeBuffer(write_buffer);
+            write_buffer.erase(write_buffer.begin(), write_buffer.begin() + writted);
         }
     }
     catch (const std::exception& exception) {
@@ -67,5 +80,27 @@ void BotCommunicator::handleOut()
 }
 [[nodiscard]] bool BotCommunicator::wantOut() const
 {
-    return !lcon.closed() /* && there is something to write */;
+    return !lcon.closed() && !write_buffer.empty();
+}
+
+[[nodiscard]] std::vector<uint8_t> BotCommunicator::serializeRequest(const BotRequest& request) const
+{
+    constexpr size_t id_size = uuids::uuid::static_size();
+    uint32_t size = sizeof(uint32_t) + id_size + sizeof(RequestOperation) + request.name.size();
+    std::vector<uint8_t> buffer(size, 0);
+    std::memcpy(buffer.data(), &size, sizeof(uint32_t));
+    std::memcpy(buffer.data() + sizeof(uint32_t), request.id.data(), id_size);
+    std::memcpy(buffer.data() + sizeof(uint32_t) + id_size, &request.op, sizeof(RequestOperation));
+    std::memcpy(buffer.data() + sizeof(uint32_t) + id_size + sizeof(RequestOperation),  //
+                request.name.data(), request.name.size());
+    return buffer;
+}
+
+[[nodiscard]] BotResponse BotCommunicator::parseResponse(const std::span<uint8_t> buffer) const
+{
+    assert(buffer.size() >= sizeof(BotResponse));
+    BotResponse response;
+    std::memcpy(response.id.data(), buffer.data(), uuids::uuid::static_size());
+    response.allowed = (*reinterpret_cast<uint8_t *>((buffer.data() + uuids::uuid::static_size())) != 0U);
+    return response;
 }

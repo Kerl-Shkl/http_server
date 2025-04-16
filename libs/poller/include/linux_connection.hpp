@@ -1,6 +1,9 @@
 #pragma once
 
 #include "logger.hpp"
+#include <cstdint>
+#include <span>
+#include <vector>
 
 class LinuxConnection
 {
@@ -17,8 +20,10 @@ public:
     [[nodiscard]] int getSocket() const noexcept;
     [[nodiscard]] bool closed() const noexcept;
     void closeConnection() noexcept;
-    virtual std::string readMessage();
-    virtual std::string_view writeMessage(const std::string_view message);
+    std::string readMessage();
+    std::vector<uint8_t> readBuffer();
+    std::string_view writeMessage(const std::string_view message);
+    int writeBuffer(const std::span<uint8_t> buffer);
 
 private:
     int socket = -1;

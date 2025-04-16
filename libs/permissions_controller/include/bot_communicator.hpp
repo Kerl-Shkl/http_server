@@ -1,6 +1,7 @@
 #pragma once
 
 #include "abstract_serialized.hpp"
+#include "bot_messages.hpp"
 #include "linux_connection.hpp"
 #include "logger.hpp"
 
@@ -16,6 +17,8 @@ public:
     BotCommunicator& operator=(const BotCommunicator&) = delete;
     BotCommunicator& operator=(BotCommunicator&&) = delete;
 
+    void askRequest(const BotRequest& request);
+
     void handleIn() override;
     void handleOut() override;
 
@@ -26,6 +29,11 @@ public:
 private:
     [[nodiscard]] int openSocket() const;
 
+    [[nodiscard]] std::vector<uint8_t> serializeRequest(const BotRequest& request) const;
+    [[nodiscard]] BotResponse parseResponse(const std::span<uint8_t> buffer) const;
+
+    std::vector<uint8_t> write_buffer;
+    std::vector<uint8_t> read_buffer;
     PermissionsController& permissions_controller;
     LinuxConnection lcon;
     Logger logger{"BotCommunicator"};
