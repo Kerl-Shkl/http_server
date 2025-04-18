@@ -7,9 +7,11 @@ class Poller
 {
 public:
     Poller();
+    ~Poller();
     void addSerialized(AbstractSerialized *serialized);
     // Later will be std::vector<AbstractSerialized*>
     AbstractSerialized *wait();
+    AbstractSerialized *check();  // For tests only
     void updateSerializedMode(AbstractSerialized& serialized) const;
 
 private:

@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <sys/epoll.h>
+#include <unistd.h>
 
 Poller::Poller()
 {
@@ -12,6 +13,12 @@ Poller::Poller()
     if (epoll_fd < 0) {
         throw std::runtime_error(std::string("epoll_create1() error: ") + std::strerror(errno));
     }
+}
+
+Poller::~Poller()
+{
+    close(epoll_fd);
+    epoll_fd = -1;
 }
 
 void Poller::addSerialized(AbstractSerialized *serialized)
@@ -36,6 +43,22 @@ AbstractSerialized *Poller::wait()
     handleIO(*serialized, event.events);
     updateSerializedMode(*serialized);
     return serialized;
+}
+
+AbstractSerialized *Poller::check()
+{
+    epoll_event event{};  // TODO add more then 1 event in epoll result
+    int waited_count = epoll_wait(epoll_fd, &event, 1, 0);
+    if (waited_count < 0) {
+        throw std::runtime_error(std::string("epoll_wait() error: ") + std::strerror(errno));
+    }
+    if (waited_count != 0) {
+        auto *serialized = static_cast<AbstractSerialized *>(event.data.ptr);
+        handleIO(*serialized, event.events);
+        updateSerializedMode(*serialized);
+        return serialized;
+    }
+    return nullptr;
 }
 
 void Poller::handleIO(AbstractSerialized& serialized, uint32_t events) const

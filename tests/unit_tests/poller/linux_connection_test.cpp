@@ -23,18 +23,10 @@ protected:
     void SetUp() override
     {
         int fds[2];
-        int res = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+        int res = socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, fds);
         ASSERT_GE(res, 0);
-        setNonBlock(fds[0]);
-        setNonBlock(fds[1]);
         lcon.setSocket(fds[0]);
         peer_fd = fds[1];
-    }
-
-    void setNonBlock(int fd)
-    {
-        int flags = fcntl(fd, F_GETFL);
-        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
     }
 
     [[nodiscard]] std::string getRandomString() const
