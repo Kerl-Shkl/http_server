@@ -17,6 +17,11 @@ Server::Server(std::shared_ptr<LogicalController> control, std::shared_ptr<Front
 
 Server::~Server() = default;
 
+void Server::addSerialized(AbstractSerialized& serialized)
+{
+    poller.addSerialized(&serialized);
+}
+
 void Server::addConnection(int socket)
 {
     auto new_connection = std::make_shared<ClientConnection>(socket, *controller);

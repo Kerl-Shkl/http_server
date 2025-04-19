@@ -16,6 +16,11 @@ void PermissionsController::askPermission(std::string note_name, RequestOperatio
     bot_communicator.askRequest(request);
 }
 
+void PermissionsController::startBotCommunication()
+{
+    bot_communicator.connectBot();
+}
+
 void PermissionsController::handleResponse(BotResponse response)
 {
     if (auto it = post_actions.find(response.id); it != post_actions.end()) {

@@ -3,11 +3,14 @@
 #include "frontend_service.hpp"
 #include "logical_controller.hpp"
 #include "md4c-html.h"
+#include "permissions_controller.hpp"
 
 BackendService::BackendService()
 : controller{std::make_shared<LogicalController>()}
+, permissions_controller(std::make_unique<PermissionsController>())
 {
     database = std::make_unique<DataBase>("postgresql://kerl@/notes");
+    permissions_controller->startBotCommunication();
 }
 
 BackendService::~BackendService() = default;
@@ -150,6 +153,11 @@ void BackendService::addPageAction(const std::string& target, const std::string_
 std::shared_ptr<LogicalController> BackendService::getLogicalController()
 {
     return controller;
+}
+
+PermissionsController& BackendService::getPermissionsController()
+{
+    return *permissions_controller;
 }
 
 auto BackendService::noteNamesList() -> json

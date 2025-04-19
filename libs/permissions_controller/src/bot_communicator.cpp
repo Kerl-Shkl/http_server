@@ -35,8 +35,8 @@ int BotCommunicator::openSocket() const
     sockaddr_un serv_addr{};
     memset(reinterpret_cast<uint8_t *>(&serv_addr), 0, sizeof(serv_addr));
     serv_addr.sun_family = AF_UNIX;
-    strcpy(serv_addr.sun_path, "/tmp/my_socket");
-    int servlen = strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
+    strcpy(serv_addr.sun_path, socket_path);
+    size_t servlen = strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
 
     int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (sockfd < 0) {

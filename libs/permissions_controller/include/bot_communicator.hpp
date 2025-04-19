@@ -39,5 +39,5 @@ private:
     PermissionsController& permissions_controller;
     LinuxConnection lcon;
     Logger logger{"BotCommunicator"};
-    static constexpr std::string_view socket_path = "/tmp/permissions_bot_socket";
+    static constexpr const char *socket_path = "/tmp/permissions_bot_socket";
 };

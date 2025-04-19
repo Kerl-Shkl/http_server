@@ -1,6 +1,7 @@
 #include "startup.hpp"
 #include "backend_service.hpp"
 #include "frontend_service.hpp"
+#include "permissions_controller.hpp"
 #include "server.hpp"
 #include <iostream>
 
@@ -22,7 +23,7 @@ void Startup::start()
     backend->setFrontendService(frontend);
     backend->init();
     server = std::make_unique<Server>(backend->getLogicalController(), frontend, port);
-
+    server->addSerialized(backend->getPermissionsController().getCommunicator());
     run();
 }
 

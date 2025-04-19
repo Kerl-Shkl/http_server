@@ -1,11 +1,13 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
+
 #include <memory>
 
 class LogicalController;
 class FrontendService;
 class DataBase;
+class PermissionsController;
 
 class BackendService
 {
@@ -16,6 +18,7 @@ public:
     void init();
     void setFrontendService(std::shared_ptr<FrontendService> frontend);
     std::shared_ptr<LogicalController> getLogicalController();
+    PermissionsController& getPermissionsController();
 
 private:
     using json = nlohmann::json;
@@ -26,4 +29,5 @@ private:
     std::shared_ptr<LogicalController> controller;
     std::shared_ptr<FrontendService> frontend;
     std::unique_ptr<DataBase> database;
+    std::unique_ptr<PermissionsController> permissions_controller;
 };

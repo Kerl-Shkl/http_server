@@ -15,6 +15,7 @@ public:
     Server(std::shared_ptr<LogicalController> controller, std::shared_ptr<FrontendService> frontend = nullptr,
            short port = 8000);
     ~Server() override;
+    void addSerialized(AbstractSerialized& serialized);
     void addConnection(int socket) override;
     void run();
 

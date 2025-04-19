@@ -13,6 +13,7 @@ public:
     PermissionsController();
     void askPermission(std::string note_name, RequestOperation op, callback_fn fn);
     BotCommunicator& getCommunicator();
+    void startBotCommunication();
 
 private:
     void handleResponse(BotResponse response);
