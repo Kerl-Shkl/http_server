@@ -2,6 +2,7 @@
 
 #include "bot_communicator.hpp"
 #include "bot_messages.hpp"
+#include "poller.hpp"
 #include <functional>
 #include <unordered_map>
 
@@ -11,6 +12,7 @@ public:
     using callback_fn = std::function<void(bool)>;
     PermissionsController();
     void askPermission(std::string note_name, RequestOperation op, callback_fn fn);
+    BotCommunicator& getCommunicator();
 
 private:
     void handleResponse(BotResponse response);
@@ -19,5 +21,6 @@ private:
     friend class BotCommunicator;
     BotCommunicator bot_communicator;
     Logger logger{"PermissionsController"};
+    Poller *poller{nullptr};
     std::unordered_map<uuids::uuid, callback_fn> post_actions;
 };

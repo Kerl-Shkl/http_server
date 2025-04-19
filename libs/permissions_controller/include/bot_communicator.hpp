@@ -18,6 +18,8 @@ public:
     BotCommunicator& operator=(BotCommunicator&&) = delete;
 
     void askRequest(const BotRequest& request);
+    void setSocket(int fd);
+    void connectBot();
 
     void handleIn() override;
     void handleOut() override;

@@ -1,4 +1,5 @@
 #include "poller.hpp"
+#include "abstract_serialized.hpp"
 #include <cassert>
 #include <cerrno>
 #include <cstring>
@@ -28,6 +29,7 @@ void Poller::addSerialized(AbstractSerialized *serialized)
     assert(events != 0);
     epoll_event new_event = {.events = events, .data = {.ptr = serialized}};
     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, serialized->getFd(), &new_event);
+    serialized->poller = this;
 }
 
 AbstractSerialized *Poller::wait()

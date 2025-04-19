@@ -10,16 +10,24 @@
 
 BotCommunicator::BotCommunicator(PermissionsController& controller)
 : permissions_controller{controller}
-{
-    int socket_fd = openSocket();
-    lcon.setSocket(socket_fd);
-}
+{}
 
 void BotCommunicator::askRequest(const BotRequest& request)
 {
     auto serialized = serializeRequest(request);
     std::ranges::copy(serialized, std::back_inserter(write_buffer));
-    // TODO updateSerializedMode
+    updateSerializedMode();
+}
+
+void BotCommunicator::setSocket(int fd)
+{
+    assert(lcon.closed());
+    lcon.setSocket(fd);
+}
+
+void BotCommunicator::connectBot()
+{
+    setSocket(openSocket());
 }
 
 int BotCommunicator::openSocket() const
@@ -48,7 +56,7 @@ void BotCommunicator::handleIn()
     try {
         std::vector<uint8_t> readed = lcon.readBuffer();
         std::ranges::copy(readed, std::back_inserter(read_buffer));
-        while (read_buffer.size() > sizeof(BotResponse)) {
+        while (read_buffer.size() >= sizeof(BotResponse)) {
             auto response = parseResponse(read_buffer);
             permissions_controller.handleResponse(response);
             read_buffer.erase(read_buffer.begin(), read_buffer.begin() + sizeof(BotResponse));
@@ -105,7 +113,7 @@ void BotCommunicator::handleOut()
     constexpr size_t id_size = sizeof(uuids::uuid);
     assert(buffer.size() >= sizeof(BotResponse));
     BotResponse response;
-    std::array<uuids::uuid::value_type, id_size> readed_id;
+    std::array<uuids::uuid::value_type, id_size> readed_id{};
     std::memcpy(readed_id.data(), buffer.data(), readed_id.size());
     response.id = uuids::uuid{readed_id};
     response.allowed = (*reinterpret_cast<uint8_t *>((buffer.data() + id_size)) != 0U);

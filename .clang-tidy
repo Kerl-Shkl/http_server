@@ -26,6 +26,10 @@ Checks:
   - "-cppcoreguidelines-avoid-const-or-ref-data-members"
   - "-misc-no-recursion"
   - "-llvm-include-order"
+  - "-cppcoreguidelines-pro-bounds-pointer-arithmetic"
+  - "-cppcoreguidelines-pro-bounds-array-to-pointer-decay"
+  - "-*-avoid-c-arrays"
+  - "-*-magic-numbers"
 
 FormatStyle: none
 HeaderFileExtensions: ['', 'h', 'hpp', 'hxx']

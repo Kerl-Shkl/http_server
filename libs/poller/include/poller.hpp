@@ -1,7 +1,8 @@
 #pragma once
 
-#include "abstract_serialized.hpp"
 #include "logger.hpp"
+
+class AbstractSerialized;
 
 class Poller
 {

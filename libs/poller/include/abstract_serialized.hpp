@@ -1,5 +1,6 @@
 #pragma once
 
+#include "poller.hpp"
 #include <cstdint>
 
 class AbstractSerialized
@@ -13,8 +14,14 @@ public:
     [[nodiscard]] virtual bool wantIn() const = 0;
     [[nodiscard]] virtual bool wantOut() const = 0;
 
+protected:
+    void updateSerializedMode()
+    {
+        poller->updateSerializedMode(*this);
+    }
+
 private:
     std::uint32_t actual_events = 0;
-
+    Poller *poller{nullptr};
     friend class Poller;
 };

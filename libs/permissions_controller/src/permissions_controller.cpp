@@ -28,6 +28,11 @@ void PermissionsController::handleResponse(BotResponse response)
     }
 }
 
+BotCommunicator& PermissionsController::getCommunicator()
+{
+    return bot_communicator;
+}
+
 [[nodiscard]] uuids::uuid PermissionsController::getRandomId() const
 {
     std::mt19937 mt(std::random_device{}());
