@@ -90,7 +90,7 @@ void BackendService::init()
                 std::string name = std::move(info["name"]);
                 std::string section_name = std::move(info["section_name"]);
                 std::string note_body = std::move(info["body"]);
-                database->addNote(name, note_body, section_name);
+                addNote(std::move(name), std::move(note_body), std::move(section_name));
             }
             catch (const std::exception& ex) {
                 std::cout << "exception: " << ex.what() << std::endl;
@@ -197,4 +197,21 @@ std::string BackendService::note(int id)
     };
     md_html(md.data(), md.size(), process, &process_field, MD_FLAG_LATEXMATHSPANS, 1);
     return process_field.first.str();
+}
+
+void BackendService::addNote(std::string name, std::string note_body, std::string section_name)
+{
+    auto deffered_action = [this, name, note_body = std::move(note_body),
+                            section_name = std::move(section_name)](bool allowed)  //
+    {
+        if (allowed) {
+            try {
+                database->addNote(name, note_body, section_name);
+            }
+            catch (const std::exception& ex) {
+                std::cout << "Backend exception: " << ex.what() << std::endl;
+            }
+        }
+    };
+    permissions_controller->askPermission(std::move(name), RequestOperation::add, std::move(deffered_action));
 }
