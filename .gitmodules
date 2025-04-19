@@ -4,3 +4,6 @@
 [submodule "libs/md4c"]
 	path = third_party/md4c
 	url = https://github.com/mity/md4c
+[submodule "third_party/stduuid"]
+	path = third_party/stduuid
+	url = https://github.com/mariusbancila/stduuid.git

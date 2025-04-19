@@ -14,6 +14,7 @@ public:
 
 private:
     void handleResponse(BotResponse response);
+    [[nodiscard]] uuids::uuid getRandomId() const;
 
     friend class BotCommunicator;
     BotCommunicator bot_communicator;

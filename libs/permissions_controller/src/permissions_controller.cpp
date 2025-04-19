@@ -1,4 +1,6 @@
 #include "permissions_controller.hpp"
+#include <cassert>
+#include <uuid.h>
 
 PermissionsController::PermissionsController()
 : bot_communicator{*this}
@@ -6,7 +8,7 @@ PermissionsController::PermissionsController()
 
 void PermissionsController::askPermission(std::string note_name, RequestOperation op, callback_fn fn)
 {
-    auto uuid = uuids::random_generator{}();
+    auto uuid = getRandomId();
     auto [it, success] = post_actions.emplace(uuid, std::move(fn));
     assert(success);
     logger.log("ask permissions for " + note_name + " with id: ", uuids::to_string(uuid));
@@ -24,4 +26,11 @@ void PermissionsController::handleResponse(BotResponse response)
     else {
         logger.log("Unknown permissions for " + uuids::to_string(response.id) + ": ", response.allowed);
     }
+}
+
+[[nodiscard]] uuids::uuid PermissionsController::getRandomId() const
+{
+    std::mt19937 mt(std::random_device{}());
+    uuids::uuid_random_generator gen{&mt};
+    return gen();
 }

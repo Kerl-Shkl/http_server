@@ -1,8 +1,6 @@
 #pragma once
 
-#include <boost/uuid.hpp>
-
-namespace uuids = boost::uuids;
+#include <uuid.h>
 
 enum class RequestOperation : uint8_t
 {

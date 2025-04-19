@@ -1,6 +1,7 @@
 #include "bot_communicator.hpp"
 #include "permissions_controller.hpp"
 #include <algorithm>
+#include <cassert>
 #include <fcntl.h>
 #include <iterator>
 #include <sys/socket.h>
@@ -88,11 +89,11 @@ void BotCommunicator::handleOut()
 
 [[nodiscard]] std::vector<uint8_t> BotCommunicator::serializeRequest(const BotRequest& request) const
 {
-    constexpr size_t id_size = uuids::uuid::static_size();
+    constexpr size_t id_size = sizeof(uuids::uuid);
     uint32_t size = sizeof(uint32_t) + id_size + sizeof(RequestOperation) + request.name.size();
     std::vector<uint8_t> buffer(size, 0);
     std::memcpy(buffer.data(), &size, sizeof(uint32_t));
-    std::memcpy(buffer.data() + sizeof(uint32_t), request.id.data(), id_size);
+    std::memcpy(buffer.data() + sizeof(uint32_t), request.id.as_bytes().data(), id_size);
     std::memcpy(buffer.data() + sizeof(uint32_t) + id_size, &request.op, sizeof(RequestOperation));
     std::memcpy(buffer.data() + sizeof(uint32_t) + id_size + sizeof(RequestOperation),  //
                 request.name.data(), request.name.size());
@@ -101,9 +102,12 @@ void BotCommunicator::handleOut()
 
 [[nodiscard]] BotResponse BotCommunicator::parseResponse(const std::span<uint8_t> buffer) const
 {
+    constexpr size_t id_size = sizeof(uuids::uuid);
     assert(buffer.size() >= sizeof(BotResponse));
     BotResponse response;
-    std::memcpy(response.id.data(), buffer.data(), uuids::uuid::static_size());
-    response.allowed = (*reinterpret_cast<uint8_t *>((buffer.data() + uuids::uuid::static_size())) != 0U);
+    std::array<uuids::uuid::value_type, id_size> readed_id;
+    std::memcpy(readed_id.data(), buffer.data(), readed_id.size());
+    response.id = uuids::uuid{readed_id};
+    response.allowed = (*reinterpret_cast<uint8_t *>((buffer.data() + id_size)) != 0U);
     return response;
 }
