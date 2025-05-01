@@ -1,5 +1,6 @@
 #pragma once
 
+#include "logger.hpp"
 #include "nlohmann/json.hpp"
 #include <memory>
 
@@ -25,9 +26,11 @@ private:
     json noteNamesList();
     std::string note(int id);
     void addNote(std::string name, std::string note_body, std::string section_name);
+    void deleteNote(int id);
 
     std::shared_ptr<LogicalController> controller;
     std::shared_ptr<FrontendService> frontend;
     std::unique_ptr<DataBase> database;
     std::unique_ptr<PermissionsController> permissions_controller;
+    Logger logger{"BackendService"};
 };

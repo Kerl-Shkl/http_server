@@ -93,7 +93,7 @@ void BackendService::init()
                 addNote(std::move(name), std::move(note_body), std::move(section_name));
             }
             catch (const std::exception& ex) {
-                std::cout << "exception: " << ex.what() << std::endl;
+                logger.log("Exception in handling addNote request ", ex.what());
                 response.setCode(400);
                 response.setStatus("Bad Request");
                 return response;
@@ -107,7 +107,7 @@ void BackendService::init()
             HttpResponse response;
             const auto& headers = request.getHeaders();
             if (auto it = headers.find("id"); it != headers.end()) {
-                int id;
+                int id{};
                 try {
                     id = std::stoi(it->second);
                 }
@@ -117,9 +117,14 @@ void BackendService::init()
                     return response;
                 }
                 try {
-                    database->deleteNote(id);
+                    deleteNote(id);
                     response.setCode(200);
                     response.setStatus("OK");
+                    return response;
+                }
+                catch (const std::runtime_error& ex) {
+                    response.setCode(400);
+                    response.setStatus("Bad Request");
                     return response;
                 }
                 catch (const std::exception& ex) {
@@ -209,9 +214,29 @@ void BackendService::addNote(std::string name, std::string note_body, std::strin
                 database->addNote(name, note_body, section_name);
             }
             catch (const std::exception& ex) {
-                std::cout << "Backend exception: " << ex.what() << std::endl;
+                logger.log("Exception in deffered addNote action ", ex.what());
             }
         }
     };
     permissions_controller->askPermission(std::move(name), RequestOperation::add, std::move(deffered_action));
+}
+
+void BackendService::deleteNote(int id)
+{
+    std::string note_name = database->getNoteName(id);
+    if (note_name.empty()) {
+        throw std::runtime_error{"There is no note with such id"};
+    }
+    auto deffered_action = [this, id](bool allowed) {
+        if (allowed) {
+            try {
+                database->deleteNote(id);
+            }
+            catch (const std::exception& ex) {
+                logger.log("Exception in deffered deleteNote action ", ex.what());
+            }
+        }
+    };
+    permissions_controller->askPermission(std::move(note_name), RequestOperation::remove,
+                                          std::move(deffered_action));
 }

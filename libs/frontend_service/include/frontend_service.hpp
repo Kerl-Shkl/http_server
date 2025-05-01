@@ -29,4 +29,5 @@ private:
     ResourceObserver resource_observer;
     std::filesystem::path extension_file;
     std::unordered_map<std::string, std::string, StringViewHash, StringViewEqualTo> extensions_map;
+    Logger logger{"FrontendService"};
 };

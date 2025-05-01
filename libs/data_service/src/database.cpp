@@ -130,6 +130,13 @@ std::vector<std::pair<int, std::string>> DataBase::getAllNoteNames()
     return names;
 }
 
+std::string DataBase::getNoteName(int id)
+{
+    pqxx::nontransaction action{connection};
+    pqxx::result extracted = action.exec_prepared("getNoteName", id);
+    return extractedToString(extracted);
+}
+
 void DataBase::registerPrepared()
 {
     connection.prepare("addSection", "INSERT INTO sections (name) VALUES ($1) RETURNING id");
@@ -145,6 +152,7 @@ void DataBase::registerPrepared()
     connection.prepare("getNoteById", "SELECT body FROM notes WHERE id = $1;");
     connection.prepare("getAllNoteNames", "SELECT id, name FROM notes;");
     connection.prepare("getNoteWithName", "SELECT name, body FROM notes WHERE id = $1;");
+    connection.prepare("getNoteName", "SELECT name FROM notes WHERE id = $1;");
 }
 
 [[nodiscard]] std::string DataBase::extractedToString(const pqxx::result& extracted) const

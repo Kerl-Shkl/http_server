@@ -6,8 +6,6 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <iostream>
-
 ResourceObserver::ResourceObserver(std::string the_resource_dir)
 : resource_dir(std::move(the_resource_dir))
 {

@@ -1,8 +1,6 @@
 #include "frontend_service.hpp"
 #include <fstream>
 
-#include <iostream>
-
 FrontendService::FrontendService(std::string res_dir)
 : resource_dir{std::move(res_dir)}
 , resource_observer{resource_dir}
@@ -19,7 +17,7 @@ std::pair<std::string, std::string> FrontendService::getContent(const std::strin
     if (!resource_path.empty()) {
         std::ifstream resource(resource_path);
         std::string content((std::istreambuf_iterator<char>(resource)), (std::istreambuf_iterator<char>()));
-        std::cout << resource_path.extension() << std::endl;
+        logger.log("extensions: ", resource_path.extension());
         return {extensionToContentType(resource_path.extension().string()), content};
     }
     return {"", ""};
