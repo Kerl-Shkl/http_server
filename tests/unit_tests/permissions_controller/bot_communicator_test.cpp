@@ -50,7 +50,7 @@ TEST_F(PermissionsControllerFixture, askRequest)
     std::uint64_t request_size = 4 + 16 + 1 + req.name.size();
     ASSERT_EQ(poller.check(), nullptr);
     bot_communicator->askRequest(req);
-    ASSERT_EQ(bot_communicator, poller.wait());
+    ASSERT_EQ(bot_communicator, poller.wait(-1));
     std::vector<uint8_t> read_buffer(1024, 0);
     size_t readed = read(peer_socket, read_buffer.data(), read_buffer.size());
     ASSERT_EQ(readed, request_size);
@@ -71,16 +71,16 @@ TEST_F(PermissionsControllerFixture, fullLoop)
         success = allowed;
         ASSERT_TRUE(allowed);
     });
-    ASSERT_EQ(poller.wait(), bot_communicator);
+    ASSERT_EQ(poller.wait(-1), bot_communicator);
     BotRequest req = readRequest(peer_socket);
     ASSERT_EQ(req.name, "test name");
     size_t writed = write(peer_socket, req.id.as_bytes().data(), 16);
     ASSERT_EQ(writed, 16);
-    ASSERT_EQ(poller.wait(), bot_communicator);
+    ASSERT_EQ(poller.wait(-1), bot_communicator);
     ASSERT_FALSE(success);
     bool answer = true;
     writed = write(peer_socket, &answer, 1);
     ASSERT_EQ(writed, 1);
-    ASSERT_EQ(poller.wait(), bot_communicator);
+    ASSERT_EQ(poller.wait(-1), bot_communicator);
     ASSERT_TRUE(success);
 }

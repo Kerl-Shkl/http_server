@@ -32,11 +32,11 @@ void Poller::addSerialized(AbstractSerialized *serialized)
     serialized->poller = this;
 }
 
-AbstractSerialized *Poller::wait()
+AbstractSerialized *Poller::wait(int timeout)
 {
     int waited_count{};
     epoll_event event{};  // TODO add more then 1 event in epoll result
-    while ((waited_count = epoll_wait(epoll_fd, &event, 1, -1)) < 1) {
+    while ((waited_count = epoll_wait(epoll_fd, &event, 1, timeout)) < 0) {
         if (errno != EINTR) {
             throw std::runtime_error(std::string("epoll_wait() error: ") + std::strerror(errno));
         }

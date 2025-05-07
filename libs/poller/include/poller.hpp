@@ -12,7 +12,7 @@ public:
     ~Poller();
     void addSerialized(AbstractSerialized *serialized);
     // Later will be std::vector<AbstractSerialized*>
-    AbstractSerialized *wait();
+    AbstractSerialized *wait(int timeout);
     AbstractSerialized *check();  // For tests only
     void updateSerializedMode(AbstractSerialized& serialized) const;
 

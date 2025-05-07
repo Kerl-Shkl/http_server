@@ -33,6 +33,16 @@ void ClientConnection::handleOut()
     }
 }
 
+std::chrono::system_clock::time_point ClientConnection::getWakeup() const noexcept
+{
+    return wakeup;
+}
+
+void ClientConnection::updateWakeup()
+{
+    wakeup = std::chrono::system_clock::now() + hold_connection_time;
+}
+
 [[nodiscard]] int ClientConnection::getFd() const
 {
     return lcon.getSocket();

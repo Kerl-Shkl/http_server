@@ -25,6 +25,7 @@ void Server::addSerialized(AbstractSerialized& serialized)
 void Server::addConnection(int socket)
 {
     auto new_connection = std::make_shared<ClientConnection>(socket, *controller);
+    new_connection->updateWakeup();
     auto [iter, inserted] = connections.insert(new_connection);
     assert(inserted);
     poller.addSerialized(iter->get());
@@ -34,12 +35,30 @@ void Server::addConnection(int socket)
 void Server::run()
 {
     for (;;) {
-        auto *serialized = poller.wait();
+        auto *serialized = poller.wait(-1);
 
         if (!serialized->wantOut() && !serialized->wantIn()) {
-            auto iter = connections.find(serialized);
-            connections.erase(iter);
+            eraseConnection(serialized);
             logger.log("Remove connection. Connections count: ", connections.size());
         }
+        else {
+            updateTimeOrder(serialized);
+        }
     }
+}
+
+void Server::eraseConnection(AbstractSerialized *serialized)
+{
+    auto& index = connections.get<0>();
+    index.erase(serialized);
+}
+
+void Server::updateTimeOrder(AbstractSerialized *serialized)
+{
+    auto& index = connections.get<0>();
+    auto iter = index.find(serialized);
+    assert(iter != index.end());
+    auto node = index.extract(iter);
+    node.value()->updateWakeup();
+    index.insert(std::move(node));
 }

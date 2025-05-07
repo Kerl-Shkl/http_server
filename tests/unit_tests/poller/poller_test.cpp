@@ -96,7 +96,7 @@ TEST_F(PollerFixture, waitIn)
     poller.addSerialized(&ser);
     ASSERT_EQ(poller.check(), nullptr);
     write(fds[1], "Hello", 5);
-    ASSERT_EQ(poller.wait(), &ser);
+    ASSERT_EQ(poller.wait(-1), &ser);
 }
 
 TEST_F(PollerFixture, unblockOut)
@@ -117,7 +117,7 @@ TEST_F(PollerFixture, unblockOut)
     poller.addSerialized(&ser);
     ASSERT_EQ(poller.check(), nullptr);
     readSocket(fds[1]);
-    ASSERT_EQ(poller.wait(), &ser);
+    ASSERT_EQ(poller.wait(-1), &ser);
 }
 
 TEST_F(PollerFixture, updateMode)
@@ -140,5 +140,5 @@ TEST_F(PollerFixture, updateMode)
     };
     ASSERT_EQ(poller.check(), nullptr);
     poller.updateSerializedMode(ser);
-    ASSERT_EQ(poller.wait(), &ser);
+    ASSERT_EQ(poller.wait(-1), &ser);
 }
