@@ -19,6 +19,7 @@ public:
     [[nodiscard]] bool wantIn() const override;
     [[nodiscard]] bool wantOut() const override;
     [[nodiscard]] bool closed() const;
+    void closeConnection();
 
 private:
     void processRequest();

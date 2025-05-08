@@ -38,6 +38,7 @@ private:
     void updateTimeOrder(AbstractSerialized *serialized);
     [[nodiscard]] int getWaitingTimeout() const;
     [[nodiscard]] time_point_t nextTimeout() const noexcept;
+    void clearTimeoutedConnections();
 
     static const void *connectionAddr(const ConnectionNode& node)
     {

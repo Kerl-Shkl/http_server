@@ -41,6 +41,9 @@ AbstractSerialized *Poller::wait(int timeout)
             throw std::runtime_error(std::string("epoll_wait() error: ") + std::strerror(errno));
         }
     }
+    if (waited_count == 0) {
+        return nullptr;
+    }
     auto *serialized = static_cast<AbstractSerialized *>(event.data.ptr);
     handleIO(*serialized, event.events);
     updateSerializedMode(*serialized);

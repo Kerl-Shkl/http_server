@@ -59,6 +59,11 @@ void ClientConnection::processRequest()
     return !closed() && !response_message.empty();
 }
 
+void ClientConnection::closeConnection()
+{
+    lcon.closeConnection();
+}
+
 [[nodiscard]] bool ClientConnection::closed() const
 {
     return lcon.closed();

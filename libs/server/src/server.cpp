@@ -35,12 +35,30 @@ void Server::run()
 {
     for (;;) {
         auto *serialized = poller.wait(getWaitingTimeout());
+        if (serialized == nullptr) {
+            clearTimeoutedConnections();
+            continue;
+        }
         if (!serialized->wantOut() && !serialized->wantIn()) {
             eraseConnection(serialized);
         }
         else {
             updateTimeOrder(serialized);
         }
+    }
+}
+
+void Server::clearTimeoutedConnections()
+{
+    auto& index = connections.get<1>();
+    auto now = std::chrono::system_clock::now();
+    for (auto it = index.begin(); it != index.end();) {
+        if (it->timeout > now) {
+            break;
+        }
+        it->connection->closeConnection();
+        poller.updateSerializedMode(*it->connection);
+        it = index.erase(it);
     }
 }
 
