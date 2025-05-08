@@ -26,7 +26,6 @@ void LogicalController::addAction(HttpMethod method, std::string target, handler
     target_map[std::move(target)] = std::move(handler);
 }
 
-// NOLINTNEXTLINE(performance-unnecessary-value-param)
 [[nodiscard]] HttpResponse LogicalController::process(HttpRequest request) const noexcept
 {
     HttpResponse response = doProcess(std::move(request));

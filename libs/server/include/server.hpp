@@ -26,27 +26,29 @@ public:
     void run();
 
 private:
-    using Connection = ClientConnection;
-    using connection_ptr_t = std::shared_ptr<Connection>;
+    using connection_ptr_t = std::shared_ptr<ClientConnection>;
+    using time_point_t = std::chrono::system_clock::time_point;
+    struct ConnectionNode
+    {
+        connection_ptr_t connection;
+        time_point_t timeout;
+    };
 
     void eraseConnection(AbstractSerialized *serialized);
     void updateTimeOrder(AbstractSerialized *serialized);
+    [[nodiscard]] int getWaitingTimeout() const;
+    [[nodiscard]] time_point_t nextTimeout() const noexcept;
 
-    static const void *connectionAddr(const connection_ptr_t& conn)
+    static const void *connectionAddr(const ConnectionNode& node)
     {
-        return conn.get();
-    }
-    static std::chrono::system_clock::time_point connectionWakeup(const connection_ptr_t& conn)
-    {
-        return conn->getWakeup();
+        return node.connection.get();
     }
 
     // clang-format off
-    using connections_t = multiindex::multi_index_container<connection_ptr_t,
+    using connections_t = multiindex::multi_index_container<ConnectionNode,
         multiindex::indexed_by<
-            multiindex::hashed_unique<multiindex::global_fun<const connection_ptr_t&, const void *, connectionAddr>>,
-            multiindex::ordered_non_unique<
-                multiindex::global_fun<const connection_ptr_t&, std::chrono::system_clock::time_point, connectionWakeup>
+            multiindex::hashed_unique<multiindex::global_fun<const ConnectionNode&, const void *, connectionAddr>>,
+            multiindex::ordered_non_unique<multiindex::member<ConnectionNode, time_point_t, &ConnectionNode::timeout>
             >
         >
     >;
@@ -55,7 +57,7 @@ private:
     Poller poller;
     Listener listener;
     connections_t connections;
+    static constexpr auto hold_connection_time = std::chrono::minutes(2);
     std::shared_ptr<LogicalController> controller;
-    std::shared_ptr<FrontendService> frontend;
     Logger logger{"Server"};
 };

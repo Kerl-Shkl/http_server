@@ -1,5 +1,6 @@
 import subprocess
 import requests
+import time
 import argparse
 
 URL = "http://localhost:8678/home"
@@ -45,6 +46,7 @@ def main():
     args = parser.parse_args()
 
     startServer()
+    time.sleep(0.5)
     response = sendRequest()
     try:
         checkResponse(response)
