@@ -1,6 +1,7 @@
 #pragma once
 
 #include "logger.hpp"
+#include <cstdint>
 
 class AbstractSerialized;
 

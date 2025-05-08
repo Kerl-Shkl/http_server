@@ -67,8 +67,12 @@ protected:
         socklen_t size_size;
         int sockopt_return = getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &send_size, &size_size);
         ASSERT_NE(sockopt_return, -1);
-        std::vector<uint8_t> buffer(send_size, 0);
-        int writed = write(fd, buffer.data(), buffer.size());
+        ASSERT_GT(send_size, 0);
+        int write_res;
+        do {
+            std::vector<uint8_t> buffer(send_size, 0);
+            write_res = write(fd, buffer.data(), buffer.size());
+        } while (write_res > 0);
         ASSERT_EQ(errno, EAGAIN);
     }
 
