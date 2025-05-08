@@ -59,6 +59,7 @@ void Server::clearTimeoutedConnections()
         it->connection->closeConnection();
         poller.removeSerialized(it->connection.get());  // remove from poller
         it = index.erase(it);
+        logger.log("Remove connection due timeout. Connections count: ", connections.size());
     }
 }
 
