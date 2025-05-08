@@ -134,11 +134,11 @@ TEST_F(PollerFixture, updateMode)
     poller.addSerialized(&ser);
     ASSERT_EQ(poller.check(), nullptr);
     ser.want_out_func = [oneshot = true]() mutable {
-        bool tmp = oneshot;
+        bool result = oneshot;
         oneshot = false;
-        return tmp;
+        return result;
     };
     ASSERT_EQ(poller.check(), nullptr);
-    poller.updateSerializedMode(ser);
+    poller.updateSerializedMode(&ser);
     ASSERT_EQ(poller.wait(-1), &ser);
 }

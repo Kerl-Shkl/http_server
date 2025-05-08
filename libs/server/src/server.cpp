@@ -57,7 +57,7 @@ void Server::clearTimeoutedConnections()
             break;
         }
         it->connection->closeConnection();
-        poller.updateSerializedMode(*it->connection);
+        poller.removeSerialized(it->connection.get());  // remove from poller
         it = index.erase(it);
     }
 }

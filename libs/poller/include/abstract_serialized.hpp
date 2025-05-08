@@ -17,7 +17,7 @@ public:
 protected:
     void updateSerializedMode()
     {
-        poller->updateSerializedMode(*this);
+        poller->updateSerializedMode(this);
     }
 
 private:

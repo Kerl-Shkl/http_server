@@ -32,6 +32,13 @@ void Poller::addSerialized(AbstractSerialized *serialized)
     serialized->poller = this;
 }
 
+void Poller::removeSerialized(AbstractSerialized *serialized)
+{
+    assert(serialized);
+    epoll_event new_event{};
+    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, serialized->getFd(), &new_event);
+}
+
 AbstractSerialized *Poller::wait(int timeout)
 {
     int waited_count{};
@@ -46,7 +53,7 @@ AbstractSerialized *Poller::wait(int timeout)
     }
     auto *serialized = static_cast<AbstractSerialized *>(event.data.ptr);
     handleIO(*serialized, event.events);
-    updateSerializedMode(*serialized);
+    updateSerializedMode(serialized);
     return serialized;
 }
 
@@ -60,7 +67,7 @@ AbstractSerialized *Poller::check()
     if (waited_count != 0) {
         auto *serialized = static_cast<AbstractSerialized *>(event.data.ptr);
         handleIO(*serialized, event.events);
-        updateSerializedMode(*serialized);
+        updateSerializedMode(serialized);
         return serialized;
     }
     return nullptr;
@@ -76,15 +83,15 @@ void Poller::handleIO(AbstractSerialized& serialized, uint32_t events) const
     }
 }
 
-void Poller::updateSerializedMode(AbstractSerialized& serialized) const
+void Poller::updateSerializedMode(AbstractSerialized *serialized) const
 {
-    uint32_t new_waiting = (serialized.wantIn() ? EPOLLIN : 0) | (serialized.wantOut() ? EPOLLOUT : 0);
-    epoll_event new_event = {.events = new_waiting, .data = {.ptr = &serialized}};
+    uint32_t new_waiting = (serialized->wantIn() ? EPOLLIN : 0) | (serialized->wantOut() ? EPOLLOUT : 0);
+    epoll_event new_event = {.events = new_waiting, .data = {.ptr = serialized}};
     if (new_waiting == 0) {
-        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, serialized.getFd(), &new_event);
+        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, serialized->getFd(), &new_event);
     }
-    else if (serialized.actual_events != new_waiting) {
-        serialized.actual_events = new_waiting;
-        epoll_ctl(epoll_fd, EPOLL_CTL_MOD, serialized.getFd(), &new_event);
+    else if (serialized->actual_events != new_waiting) {
+        serialized->actual_events = new_waiting;
+        epoll_ctl(epoll_fd, EPOLL_CTL_MOD, serialized->getFd(), &new_event);
     }
 }
