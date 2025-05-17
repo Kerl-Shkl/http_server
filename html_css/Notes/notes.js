@@ -26,11 +26,7 @@ function changeSelected(new_element)
 
 async function getNote(id)
 {
-    const response = await fetch("/api/note_body", {
-        headers: {
-            "id": id
-        }
-    });
+    const response = await fetch("/api/note_body;id=" + id );
     var article = document.getElementById("note_body");
     const text = await response.text();
     article.innerHTML = text;

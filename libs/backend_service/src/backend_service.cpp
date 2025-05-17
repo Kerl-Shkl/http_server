@@ -36,10 +36,10 @@ void BackendService::init()
             return response;
         });
     controller->addAction(  //
-        HttpMethod::GET, "/api/note_body", [this](const HttpRequest& request) -> HttpResponse {
+        HttpMethod::GET, "/api/note_body;id", [this](const HttpRequest& request) -> HttpResponse {
             HttpResponse response;
-            const auto& headers = request.getHeaders();
-            if (auto it = headers.find("id"); it != headers.end()) {
+            const auto& parameters = request.getParameters();
+            if (auto it = parameters.find("id"); it != parameters.end()) {
                 try {
                     int id = std::stoi(it->second);
                     std::string body = note(id);
