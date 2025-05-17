@@ -1,13 +1,11 @@
 #include "backend_service.hpp"
 #include "database.hpp"
-#include "frontend_service.hpp"
 #include "logical_controller.hpp"
 #include "md4c-html.h"
 #include "permissions_controller.hpp"
 
 BackendService::BackendService()
-: controller{std::make_shared<LogicalController>()}
-, permissions_controller(std::make_unique<PermissionsController>())
+: permissions_controller(std::make_unique<PermissionsController>())
 {
     database = std::make_unique<DataBase>("postgresql://kerl@/notes");
     permissions_controller->startBotCommunication();
@@ -15,17 +13,12 @@ BackendService::BackendService()
 
 BackendService::~BackendService() = default;
 
-void BackendService::setFrontendService(std::shared_ptr<FrontendService> frontend_service)
+void BackendService::init(std::shared_ptr<LogicalController> ctrl)
 {
-    frontend = std::move(frontend_service);
-    controller->setFrontendService(frontend);
-}
-
-void BackendService::init()
-{
-    addPageAction("/home", "cv.html");
-    addPageAction("/faq", "faq.html");
-    addPageAction("/notes", "note.html");
+    controller = std::move(ctrl);
+    controller->addResourceMapping(HttpMethod::GET, "/home", "cv.html");
+    controller->addResourceMapping(HttpMethod::GET, "/faq", "faq.html");
+    controller->addResourceMapping(HttpMethod::GET, "/notes", "note.html");
     controller->addAction(  //
         HttpMethod::GET, "/api/note_names", [this](const HttpRequest& request) -> HttpResponse {
             HttpResponse response;
@@ -138,20 +131,6 @@ void BackendService::init()
                 response.setStatus("Bad Request");
                 return response;
             }
-        });
-}
-
-void BackendService::addPageAction(const std::string& target, const std::string_view resource)
-{
-    controller->addAction(  //
-        HttpMethod::GET, target, [this, resource](const HttpRequest&) -> HttpResponse {
-            auto [content_type, content] = frontend->getContent(resource);
-            assert(!content.empty());
-            HttpResponse response;
-            response.setBody(std::move(content_type), std::move(content));
-            response.setStatus("OK");
-            response.setCode(200);
-            return response;
         });
 }
 

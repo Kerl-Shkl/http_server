@@ -119,3 +119,7 @@ void BotCommunicator::handleOut()
     response.allowed = (*reinterpret_cast<uint8_t *>((buffer.data() + id_size)) != 0U);
     return response;
 }
+bool BotCommunicator::connected() const noexcept
+{
+    return !lcon.closed();
+}

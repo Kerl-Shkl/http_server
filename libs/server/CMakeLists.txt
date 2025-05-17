@@ -3,4 +3,4 @@ set(SOURCE_FILES src/client_connection.cpp
 
 add_library(server ${SOURCE_FILES})
 target_include_directories(server PUBLIC include)
-target_link_libraries(server PUBLIC utils logical_controller poller)
+target_link_libraries(server PUBLIC utils logical_controller frontend_service poller)

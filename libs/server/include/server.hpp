@@ -1,10 +1,9 @@
 #pragma once
 
+#include "backend_interface.hpp"
 #include "client_connection.hpp"
-#include "functor_utils.hpp"
 #include "listener.hpp"
 #include "poller.hpp"
-#include <unordered_set>
 
 #include <boost/multi_index/key.hpp>
 #include <boost/multi_index/mem_fun.hpp>
@@ -18,11 +17,11 @@ namespace multiindex = boost::multi_index;
 class Server : public ConnectionKeeper
 {
 public:
-    Server(std::shared_ptr<LogicalController> controller, std::shared_ptr<FrontendService> frontend = nullptr,
-           short port = 8000);
+    Server(std::string resource_dir, short port = 8000);
     ~Server() override;
+    void setBackendService(std::shared_ptr<BackendInterface> backend_service);
     void addSerialized(AbstractSerialized& serialized);
-    void addConnection(int socket) override;
+    void addConnection(int socket) override;  // Change may be (add with ClientConnection not socket fd)
     void run();
 
 private:
@@ -60,5 +59,7 @@ private:
     connections_t connections;
     static constexpr auto hold_connection_time = std::chrono::minutes(2);
     std::shared_ptr<LogicalController> controller;
+    std::shared_ptr<FrontendService> frontend;
+    std::shared_ptr<BackendInterface> backend{nullptr};
     Logger logger{"Server"};
 };

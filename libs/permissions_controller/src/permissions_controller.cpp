@@ -8,6 +8,10 @@ PermissionsController::PermissionsController()
 
 void PermissionsController::askPermission(std::string note_name, RequestOperation op, callback_fn fn)
 {
+    if (!bot_communicator.connected()) {
+        logger.log("ask permissions for " + note_name + ". Bot communicator is disconnected");
+        fn(false);
+    }
     auto uuid = getRandomId();
     auto [it, success] = post_actions.emplace(uuid, std::move(fn));
     assert(success);
@@ -18,7 +22,12 @@ void PermissionsController::askPermission(std::string note_name, RequestOperatio
 
 void PermissionsController::startBotCommunication()
 {
-    bot_communicator.connectBot();
+    try {
+        bot_communicator.connectBot();
+    }
+    catch (const std::runtime_error& ex) {
+        logger.log("Can't connect to tg bot. All permission request will be rejected");
+    }
 }
 
 void PermissionsController::handleResponse(BotResponse response)

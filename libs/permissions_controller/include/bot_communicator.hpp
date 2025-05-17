@@ -20,6 +20,7 @@ public:
     void askRequest(const BotRequest& request);
     void setSocket(int fd);
     void connectBot();
+    [[nodiscard]] bool connected() const noexcept;
 
     void handleIn() override;
     void handleOut() override;

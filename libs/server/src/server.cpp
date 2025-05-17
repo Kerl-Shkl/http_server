@@ -3,14 +3,19 @@
 #include "logical_controller.hpp"
 #include <cassert>
 
-Server::Server(std::shared_ptr<LogicalController> control, std::shared_ptr<FrontendService> front, short port)
+Server::Server(std::string resource_dir, short port)
 : listener(port, *this)
-, controller(std::move(control))
 {
-    poller.addSerialized(&listener);
-    if (front != nullptr) {
-        poller.addSerialized(&front->getResourceObserver());
+    controller = std::make_shared<LogicalController>();
+
+    if (!resource_dir.empty()) {
+        frontend = std::make_shared<FrontendService>(std::move(resource_dir));
+        poller.addSerialized(&frontend->getResourceObserver());
+        controller->setFrontendService(frontend);
     }
+
+    poller.addSerialized(&listener);
+
     logger.log("Start listening. Port: ", listener.port());
 }
 
@@ -97,4 +102,9 @@ int Server::getWaitingTimeout() const
     time_point_t timeout = index.begin()->timeout;
     auto milisecs = chrono::duration_cast<chrono::milliseconds>(timeout - chrono::system_clock::now());
     return (milisecs > chrono::milliseconds::zero()) ? milisecs.count() : 0;
+}
+void Server::setBackendService(std::shared_ptr<BackendInterface> backend_service)
+{
+    backend = std::move(backend_service);
+    backend->init(controller);
 }

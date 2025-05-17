@@ -15,6 +15,7 @@ public:
     LogicalController();
     void setFrontendService(std::shared_ptr<FrontendService> frontend);
     void addAction(HttpMethod method, std::string target, handler_t handler);
+    void addResourceMapping(HttpMethod method, std::string target, std::string resource);
 
     [[nodiscard]] HttpResponse process(HttpRequest request) const noexcept;
 

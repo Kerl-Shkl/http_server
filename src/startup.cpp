@@ -18,12 +18,14 @@ Startup::Startup(int argc, char *argv[])  // NOLINT (cppcoreguidelines-avoid-c-a
 void Startup::start()
 {
     initParams();
-    frontend = std::make_shared<FrontendService>(resource_dir);
     backend = std::make_shared<BackendService>();
-    backend->setFrontendService(frontend);
-    backend->init();
-    server = std::make_unique<Server>(backend->getLogicalController(), frontend, port);
-    server->addSerialized(backend->getPermissionsController().getCommunicator());
+    server = std::make_unique<Server>(resource_dir, port);
+    auto& bot_communicator = backend->getPermissionsController().getCommunicator();
+    if (bot_communicator.connected()) {
+        server->addSerialized(bot_communicator);
+    }
+    server->setBackendService(backend);
+
     run();
 }
 

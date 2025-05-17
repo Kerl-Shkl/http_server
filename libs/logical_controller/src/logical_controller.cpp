@@ -26,6 +26,20 @@ void LogicalController::addAction(HttpMethod method, std::string target, handler
     target_map[std::move(target)] = std::move(handler);
 }
 
+void LogicalController::addResourceMapping(HttpMethod method, std::string target, std::string resource)
+{
+    auto& target_map = handlers[method];
+    target_map[std::move(target)] = [resource = std::move(resource), this](HttpRequest) -> HttpResponse {
+        if (frontend_service) {
+            auto [content_type, content] = frontend_service->getContent(resource);
+            if (!content.empty()) {
+                return contentResponse(std::move(content_type), std::move(content));
+            }
+        }
+        return common_response::notFound();
+    };
+}
+
 [[nodiscard]] HttpResponse LogicalController::process(HttpRequest request) const noexcept
 {
     HttpResponse response = doProcess(std::move(request));
@@ -43,9 +57,11 @@ HttpResponse LogicalController::doProcess(HttpRequest request) const noexcept
         return iter->second(std::move(request));
     }
     log.log("No such target: " + target);
-    auto [content_type, content] = frontend_service->getContent(target);
-    if (!content.empty()) {
-        return contentResponse(std::move(content_type), std::move(content));
+    if (frontend_service) {
+        auto [content_type, content] = frontend_service->getContent(target);
+        if (!content.empty()) {
+            return contentResponse(std::move(content_type), std::move(content));
+        }
     }
     log.log("No such content: " + target);
     return common_response::notFound();
