@@ -1,4 +1,4 @@
-set(SOURCE_FILES src/data_service.cpp src/database.cpp)
+set(SOURCE_FILES src/database.cpp)
 
 add_library(data_service ${SOURCE_FILES})
 

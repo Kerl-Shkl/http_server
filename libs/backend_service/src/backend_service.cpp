@@ -22,10 +22,22 @@ void BackendService::init(std::shared_ptr<LogicalController> ctrl)
     controller->addAction(  //
         HttpMethod::GET, "/api/note_names", [this](const HttpRequest& request) -> HttpResponse {
             HttpResponse response;
-            json note_names = noteNamesList();
-            response.setStatus("OK");
-            response.setCode(200);
-            response.setBody("application/json", note_names.dump());
+            try {
+                json note_names = noteNamesList();
+                response.setStatus("OK");
+                response.setCode(200);
+                response.setBody("application/json", note_names.dump());
+            }
+            catch (const pqxx::failure& pex) {
+                logger.log("database error: ", pex.what());
+                response.setStatus("Internal Server Error");
+                response.setCode(500);
+            }
+            catch (const std::exception& ex) {
+                logger.log("error: ", ex.what());
+                response.setStatus("Internal Server Error");
+                response.setCode(500);
+            }
             return response;
         });
     controller->addAction(  //
