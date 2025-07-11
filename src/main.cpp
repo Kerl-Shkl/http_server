@@ -2,6 +2,6 @@
 
 int main(int argc, char *argv[])
 {
-    Startup startup(argc, argv);
+    Startup startup{argc, argv};
     startup.start();
 }
