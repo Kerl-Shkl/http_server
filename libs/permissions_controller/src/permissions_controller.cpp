@@ -11,6 +11,7 @@ void PermissionsController::askPermission(std::string note_name, RequestOperatio
     if (!bot_communicator.connected()) {
         logger.log("ask permissions for " + note_name + ". Bot communicator is disconnected");
         fn(false);
+        return;
     }
     auto uuid = getRandomId();
     auto [it, success] = post_actions.emplace(uuid, std::move(fn));
