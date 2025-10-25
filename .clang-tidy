@@ -30,6 +30,7 @@ Checks:
   - "-cppcoreguidelines-pro-bounds-array-to-pointer-decay"
   - "-*-avoid-c-arrays"
   - "-*-magic-numbers"
+  - "-bugprone-easily-swappable-parameters"
 
 FormatStyle: none
 HeaderFileExtensions: ['', 'h', 'hpp', 'hxx']

@@ -9,8 +9,8 @@ DataBase::DataBase(const std::string& connection_string)
 int DataBase::addSection(const std::string& section_name)
 {
     pqxx::work transaction{connection};
-    pqxx::row id_row = transaction.exec_prepared1("addSection", section_name);
-    int id = id_row[0].as<int>();
+    pqxx::result query_res = transaction.exec(pqxx::prepped{"addSection"}, pqxx::params{section_name});
+    int id = query_res.one_field().as<int>();
     transaction.commit();
     return id;
 }
@@ -18,37 +18,38 @@ int DataBase::addSection(const std::string& section_name)
 void DataBase::deleteSection(const std::string& section_name)
 {
     pqxx::work transaction{connection};
-    transaction.exec_prepared0("deleteSection", section_name);
+    transaction.exec(pqxx::prepped{"deleteSection"}, pqxx::params{section_name}).no_rows();
     transaction.commit();
 }
 
 std::string DataBase::getSection(int id)
 {
     pqxx::nontransaction action{connection};
-    pqxx::result extracted = action.exec_prepared("getSection", id);
+    pqxx::result extracted = action.exec(pqxx::prepped{"getSection"}, pqxx::params{id});
     return extractedToString(extracted);
 }
 
 int DataBase::getOrAddSection(const std::string& section_name)
 {
     pqxx::work transaction{connection};
-    pqxx::result id_row = transaction.exec_prepared("getSectionId", section_name);
+    pqxx::result id_row = transaction.exec(pqxx::prepped{"getSectionId"}, pqxx::params{section_name});
     if (id_row.empty()) {
-        pqxx::row inserted_id_row = transaction.exec_prepared1("addSection", section_name);
+        pqxx::field inserted_id_field =
+            transaction.exec(pqxx::prepped{"addSection"}, pqxx::params{section_name}).one_field();
         transaction.commit();
-        return inserted_id_row[0].as<int>();
+        return inserted_id_field.as<int>();
     }
-    return id_row.front()[0].as<int>();
+    return id_row.front().front().as<int>();
 }
 
 std::optional<int> DataBase::getSectionIdByNote(int note_id)
 {
     pqxx::nontransaction action{connection};
-    pqxx::result id_row = action.exec_prepared("getSectionIdByNote", note_id);
-    if (id_row.empty()) {
+    pqxx::result id_res = action.exec(pqxx::prepped{"getSectionIdByNote"}, note_id);
+    if (id_res.empty()) {
         return std::nullopt;
     }
-    return id_row.front()[0].as<int>();
+    return id_res.one_field().as<int>();
 }
 
 int DataBase::addNote(const std::string& name, const std::string& body, int section_id)
@@ -70,8 +71,8 @@ int DataBase::addNote(const std::string& name, const std::string& body, const st
 int DataBase::doAddNote(const std::string& name, const std::string& body, std::optional<int> section_id)
 {
     pqxx::work transaction{connection};
-    pqxx::row id_row = transaction.exec_prepared1("addNote", name, body, section_id);
-    int id = id_row[0].as<int>();
+    pqxx::result res = transaction.exec(pqxx::prepped{"addNote"}, {name, body, section_id});
+    int id = res.one_field().as<int>();
     transaction.commit();
     return id;
 }
@@ -79,35 +80,35 @@ int DataBase::doAddNote(const std::string& name, const std::string& body, std::o
 void DataBase::deleteNote(const std::string& name)
 {
     pqxx::work transaction{connection};
-    transaction.exec_prepared0("deleteNoteByName", name);
+    transaction.exec(pqxx::prepped{"deleteNoteByName"}, pqxx::params(name));
     transaction.commit();
 }
 
 void DataBase::deleteNote(int id)
 {
     pqxx::work transaction{connection};
-    transaction.exec_prepared0("deleteNoteById", id);
+    transaction.exec(pqxx::prepped{"deleteNoteById"}, pqxx::params{id});
     transaction.commit();
 }
 
 std::string DataBase::getNote(const std::string& name)
 {
     pqxx::nontransaction action{connection};
-    pqxx::result extracted = action.exec_prepared("getNoteByName", name);
+    pqxx::result extracted = action.exec(pqxx::prepped{"getNoteByName"}, pqxx::params{name});
     return extractedToString(extracted);
 }
 
 std::string DataBase::getNote(int id)
 {
     pqxx::nontransaction action{connection};
-    pqxx::result extracted = action.exec_prepared("getNoteById", id);
+    pqxx::result extracted = action.exec(pqxx::prepped{"getNoteById"}, pqxx::params{id});
     return extractedToString(extracted);
 }
 
 std::pair<std::string, std::string> DataBase::getNoteWithName(int id)
 {
     pqxx::nontransaction action{connection};
-    pqxx::result extracted = action.exec_prepared("getNoteWithName", id);
+    pqxx::result extracted = action.exec(pqxx::prepped{"getNoteWithName"}, pqxx::params{id});
     if (extracted.empty()) {
         return {"", ""};
     }
@@ -119,7 +120,7 @@ std::pair<std::string, std::string> DataBase::getNoteWithName(int id)
 std::vector<std::pair<int, std::string>> DataBase::getAllNoteNames()
 {
     pqxx::nontransaction action{connection};
-    pqxx::result name_rows = action.exec_prepared("getAllNoteNames");
+    pqxx::result name_rows = action.exec(pqxx::prepped{"getAllNoteNames"});
     std::vector<std::pair<int, std::string>> names;
     names.reserve(name_rows.size());
     for (auto row : name_rows) {
@@ -133,7 +134,7 @@ std::vector<std::pair<int, std::string>> DataBase::getAllNoteNames()
 std::string DataBase::getNoteName(int id)
 {
     pqxx::nontransaction action{connection};
-    pqxx::result extracted = action.exec_prepared("getNoteName", id);
+    pqxx::result extracted = action.exec(pqxx::prepped{"getNoteName"}, pqxx::params{id});
     return extractedToString(extracted);
 }
 

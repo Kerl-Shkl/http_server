@@ -10,7 +10,9 @@ constexpr auto note_body = "test note body";
 constexpr auto note_name2 = "second test note name";
 constexpr auto note_body2 = "second test note body";
 
-static void clearTestDB()
+namespace {
+
+void clearTestDB()
 {
     pqxx::connection connection{connection_string};
     pqxx::work transaction{connection};
@@ -20,14 +22,16 @@ static void clearTestDB()
     transaction.commit();
 }
 
-static bool isDBClean()
+bool isDBClean()
 {
     pqxx::connection connection{connection_string};
     pqxx::work transaction{connection};
-    pqxx::row notes_count = transaction.exec1("SELECT COUNT(*) FROM notes;");
-    pqxx::row sections_count = transaction.exec1("SELECT COUNT(*) FROM sections;");
+    pqxx::row notes_count = transaction.exec("SELECT COUNT(*) FROM notes;").one_row();
+    pqxx::row sections_count = transaction.exec("SELECT COUNT(*) FROM sections;").one_row();
     return notes_count[0].as<int>() == 0 && sections_count[0].as<int>() == 0;
 }
+
+}  // namespace
 
 class DBCleaner : public ::testing::Environment
 {
@@ -70,7 +74,7 @@ TEST_F(TestDB, addAndGetSection)
 TEST_F(TestDB, getNonExistentSection)
 {
     int nonexistent_id = 42;
-    auto nonexistent_name = "nonexistent_name";
+    constexpr std::string_view nonexistent_name = "nonexistent_name";
 
     auto selected_name = database->getSection(nonexistent_id);
 
@@ -174,7 +178,7 @@ TEST_F(TestDB, getAllNotes)
         {id,  note_name },
         {id2, note_name2}
     };
-    EXPECT_TRUE(std::is_permutation(note_names.begin(), note_names.end(), expected.begin(), expected.end()));
+    EXPECT_TRUE(std::ranges::is_permutation(note_names, expected));
 }
 
 int main(int argc, char **argv)
