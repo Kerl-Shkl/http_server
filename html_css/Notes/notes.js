@@ -4,8 +4,10 @@ var menu_items = new Map();
 
 function nameClicked()
 {
+    const id = menu_items.get(this);
     changeSelected(this);
-    getNote(menu_items.get(this))
+    getNote(id)
+
 }
 
 function changeSelected(new_element)
@@ -42,6 +44,10 @@ async function getNote(id)
         // • rendering keys, e.g.:
         throwOnError : false
     });
+
+    var url = new URL(window.location);
+    url.searchParams.set("id", id);
+    history.pushState(null, '', url);
 }
 
 function handleLoad()
@@ -49,6 +55,15 @@ function handleLoad()
     loadMenu();
     setupAddNoteWindow();
     setupSureDeleteWindow();
+    checkNoteIdInUrl();
+}
+
+function checkNoteIdInUrl()
+{
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('id')) {
+        getNote(url.searchParams.get('id'))
+    }
 }
 
 async function loadMenu()
