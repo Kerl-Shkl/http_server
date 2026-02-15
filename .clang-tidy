@@ -17,6 +17,7 @@ Checks:
   - "-readability-convert-member-functions-to-static"
   - "-cppcoreguidelines-avoid-do-while"
   - "-modernize-use-auto"
+  - "-modernize-use-nodiscard"
   - "-cppcoreguidelines-pro-type-reinterpret-cast"
   - "-cppcoreguidelines-pro-type-vararg"
   - "-cppcoreguidelines-non-private-member-variables-in-classes"
