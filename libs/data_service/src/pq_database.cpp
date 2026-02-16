@@ -4,24 +4,63 @@
 namespace {
 
 template<typename T>
-struct TypeFix
+struct ParamWrapper;
+
+template<>
+struct ParamWrapper<std::string>
 {
-    using type = T&;
-};
-template<typename T>
-struct TypeFix<T&&>
-{
-    using type = T;
+    ParamWrapper(std::string& s)
+    : ref_s{s}
+    {}
+
+    ParamWrapper(std::string&& s)  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved)
+    : ref_s{s}
+    {}
+
+    const char *pointer()
+    {
+        return ref_s.c_str();
+    }
+
+    int size()
+    {
+        return 0;
+    }
+
+    int format()
+    {
+        return 0;  // text
+    }
+
+private:
+    std::string& ref_s;
 };
 
 template<>
-struct TypeFix<int>
+struct ParamWrapper<int>
 {
-    using type = int;
-};
+    ParamWrapper(int i)
+    : network_value{static_cast<int>(htonl(i))}
+    {}
 
-template<typename... Args>
-using fixed_tuple = std::tuple<typename TypeFix<Args>::type...>;
+    const char *pointer()
+    {
+        return reinterpret_cast<char *>(&network_value);
+    }
+
+    int size()
+    {
+        return sizeof(int);
+    }
+
+    int format()
+    {
+        return 1;  // binary
+    }
+
+private:
+    int network_value;
+};
 
 template<typename Tuple, typename Func, int n>
 struct Filler
@@ -52,38 +91,21 @@ void fillArray(ArrType arr, Func f, std::tuple<Args...>& t)
     }
 }
 
-char *toParamPointer(int& i)
-{
-    i = htonl(i);
-    return reinterpret_cast<char *>(&i);
-}
-
-const char *toParamPointer(const std::string& str)
-{
-    return str.c_str();
-}
-
-size_t toParamSize(int& /*unused*/)
-{
-    return sizeof(int);
-}
-
-size_t toParamSize(std::string& s)
-{
-    return s.size();  // should be unused
-}
-
-int toParamFormat(int& /*unused*/)
-{
-    return 1;  // binary
-}
-
-int toParamFormat(std::string& /*unused*/)
-{
-    return 0;  // text
-}
-
 }  // namespace
+
+template<typename... Args>
+PGresult *PQDatabase::execParams(const std::string& query, bool bin_result, Args&&...args)
+{
+    std::tuple<ParamWrapper<std::remove_cvref_t<Args>...>> tup{std::forward<Args>(args)...};
+    const char *params_ptr[sizeof...(Args)];
+    int params_size[sizeof...(Args)];
+    int params_format[sizeof...(Args)];
+    fillArray(params_ptr, [](auto& v) { return v.pointer(); }, tup);
+    fillArray(params_size, [](auto& v) { return v.size(); }, tup);
+    fillArray(params_format, [](auto& v) { return v.format(); }, tup);
+    return PQexecParams(connection, query.c_str(), sizeof...(Args), nullptr, params_ptr, params_size,
+                        params_format, bin_result ? 1 : 0);
+}
 
 PQDatabase::PQDatabase(std::string conn_string)
 : connection_string{std::move(conn_string)}
@@ -137,20 +159,6 @@ std::string PQDatabase::getNote(int id)
     PQclear(res);
 
     return note_body;
-}
-
-template<typename... Args>
-PGresult *PQDatabase::execParams(const std::string& query, bool bin_result, Args&&...args)
-{
-    fixed_tuple<Args&&...> tup{std::forward<Args>(args)...};
-    char *params_ptr[sizeof...(Args)];
-    int params_size[sizeof...(Args)];
-    int params_format[sizeof...(Args)];
-    fillArray(params_ptr, [](auto& v) { return toParamPointer(v); }, tup);
-    fillArray(params_size, [](auto& v) { return toParamSize(v); }, tup);
-    fillArray(params_format, [](auto& v) { return toParamFormat(v); }, tup);
-    return PQexecParams(connection, query.c_str(), sizeof...(Args), nullptr, params_ptr, params_size,
-                        params_format, bin_result ? 1 : 0);
 }
 
 int PQDatabase::addNote(const std::string& name, const std::string& body)
