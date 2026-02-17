@@ -72,8 +72,6 @@ public:
 private:
     void connect() noexcept;
     bool isConnected() const noexcept;
-    template<typename... Args>
-    PGresult *execParams(const std::string& query, bool bin_result = false, Args&&...args);
 
     std::string connection_string;
     PGconn *connection{nullptr};
