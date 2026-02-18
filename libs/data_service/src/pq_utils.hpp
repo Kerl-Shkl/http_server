@@ -46,6 +46,33 @@ private:
     std::string& ref_s;
 };
 
+template<typename T> concept cstr_concept = std::is_convertible_v<T, const char *>;
+template<cstr_concept T>
+struct ParamWrapper<T>
+{
+    ParamWrapper(const char *s)
+    : str{s}
+    {}
+
+    const char *pointer()
+    {
+        return str;
+    }
+
+    int size()
+    {
+        return 0;
+    }
+
+    int format()
+    {
+        return static_cast<int>(ParamFormat::text);
+    }
+
+private:
+    const char *str;
+};
+
 template<>
 struct ParamWrapper<int>
 {
@@ -141,7 +168,7 @@ public:
     bool valid()
     {
         auto status = PQresultStatus(result);
-        return status == PGRES_COMMAND_OK;
+        return status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK;
     }
 
     template<typename T>
