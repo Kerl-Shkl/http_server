@@ -27,23 +27,50 @@ struct ParamWrapper<std::string>
     : ref_s{s}
     {}
 
-    const char *pointer()
+    const char *pointer() const noexcept
     {
         return ref_s.c_str();
     }
 
-    int size()
+    int size() const noexcept
     {
         return 0;
     }
 
-    int format()
+    int format() const noexcept
     {
         return static_cast<int>(ParamFormat::text);
     }
 
 private:
     std::string& ref_s;
+};
+
+template<typename T> concept cstr_concept = std::is_convertible_v<T, const char *>;
+template<cstr_concept T>
+struct ParamWrapper<T>
+{
+    ParamWrapper(const char *s)
+    : str{s}
+    {}
+
+    const char *pointer() const noexcept
+    {
+        return str;
+    }
+
+    int size() const noexcept
+    {
+        return 0;
+    }
+
+    int format() const noexcept
+    {
+        return static_cast<int>(ParamFormat::text);
+    }
+
+private:
+    const char *str;
 };
 
 template<>
@@ -53,17 +80,17 @@ struct ParamWrapper<int>
     : network_value{static_cast<int>(htonl(i))}
     {}
 
-    const char *pointer()
+    const char *pointer() const noexcept
     {
-        return reinterpret_cast<char *>(&network_value);
+        return reinterpret_cast<const char *>(&network_value);
     }
 
-    int size()
+    int size() const noexcept
     {
         return sizeof(int);
     }
 
-    int format()
+    int format() const noexcept
     {
         return static_cast<int>(ParamFormat::binary);
     }
@@ -128,20 +155,25 @@ public:
     ResultWrapper(const ResultWrapper&) = delete;
     ResultWrapper& operator=(const ResultWrapper&) = delete;
 
-    int rows() const
+    int rows() const noexcept
     {
         return PQntuples(result);
     }
 
-    int columns() const
+    int columns() const noexcept
     {
         return PQnfields(result);
     }
 
-    bool valid()
+    bool empty() const noexcept
+    {
+        return rows() == 0;
+    }
+
+    bool valid() const noexcept
     {
         auto status = PQresultStatus(result);
-        return status == PGRES_COMMAND_OK;
+        return status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK;
     }
 
     template<typename T>
@@ -197,14 +229,21 @@ inline int ResultWrapper::get<int>(int row, int column)
 template<typename... Args>
 ResultWrapper execParams(PGconn *connection, const std::string& query, Args&&...args)
 {
-    std::tuple<detail::ParamWrapper<std::remove_cvref_t<Args>...>> tup{std::forward<Args>(args)...};
-    const char *params_ptr[sizeof...(Args)];
-    int params_size[sizeof...(Args)];
-    int params_format[sizeof...(Args)];
-    detail::fillArray(params_ptr, [](auto& v) { return v.pointer(); }, tup);
-    detail::fillArray(params_size, [](auto& v) { return v.size(); }, tup);
-    detail::fillArray(params_format, [](auto& v) { return v.format(); }, tup);
-    PGresult *res = PQexecParams(connection, query.c_str(), sizeof...(Args), nullptr, params_ptr, params_size,
-                                 params_format, 1);
+    PGresult *res{nullptr};
+    if constexpr (sizeof...(Args) > 0) {
+        std::tuple<detail::ParamWrapper<std::remove_cvref_t<Args>>...> tup{std::forward<Args>(args)...};
+        const char *params_ptr[sizeof...(Args)];
+        int params_size[sizeof...(Args)];
+        int params_format[sizeof...(Args)];
+        detail::fillArray(params_ptr, [](auto& v) { return v.pointer(); }, tup);
+        detail::fillArray(params_size, [](auto& v) { return v.size(); }, tup);
+        detail::fillArray(params_format, [](auto& v) { return v.format(); }, tup);
+        res = PQexecParams(connection, query.c_str(), sizeof...(Args), nullptr, params_ptr, params_size,
+                           params_format, static_cast<int>(detail::ParamFormat::binary));
+    }
+    else {
+        res = PQexecParams(connection, query.c_str(), 0, nullptr, nullptr, nullptr, nullptr,
+                           static_cast<int>(detail::ParamFormat::binary));
+    }
     return ResultWrapper{res};
 }
