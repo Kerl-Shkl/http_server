@@ -53,8 +53,8 @@ class TestDB : public testing::Test
 protected:
     void SetUp() override
     {
-        // database = std::make_unique<DataBase>(connection_string);
-        database = std::make_unique<PQDatabase>(connection_string);
+        database = std::make_unique<DataBase>(connection_string);
+        // database = std::make_unique<PQDatabase>(connection_string);
     }
 
     void TearDown() override
