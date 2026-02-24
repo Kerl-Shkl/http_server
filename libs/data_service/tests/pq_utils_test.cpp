@@ -186,6 +186,42 @@ TEST_F(TestUtils, selectTwoColumn)
     EXPECT_EQ(select_result.get<std::string>(0, 1), test_str);
 }
 
+TEST_F(TestUtils, insertNull)
+{
+    std::string test_str = "string";
+    std::optional<std::string> null_opt_str;
+    std::string query = "INSERT INTO int_string(i, s) VALUES ($1, $2);";
+
+    ResultWrapper insert_1 = execParams(connection, query, 0, std::optional<std::string>{test_str});
+    EXPECT_TRUE(insert_1.valid());
+    ResultWrapper insert_2 = execParams(connection, query, 1, null_opt_str);
+    EXPECT_TRUE(insert_2.valid());
+    ResultWrapper insert_3 = execParams(connection, query, 2, std::nullopt);
+    EXPECT_TRUE(insert_3.valid());
+
+    std::string select_query = "SELECT s FROM int_string WHERE i=$1;";
+    {
+        ResultWrapper select_1 = execParams(connection, select_query, 0);
+        EXPECT_TRUE(select_1.valid());
+        EXPECT_EQ(select_1.rows(), 1);
+        EXPECT_EQ(select_1.getOnlyOne<std::string>(), test_str);
+    }
+
+    {
+        ResultWrapper select_2 = execParams(connection, select_query, 1);
+        EXPECT_TRUE(select_2.valid());
+        EXPECT_EQ(select_2.rows(), 1);
+        EXPECT_EQ(select_2.getOnlyOne<std::string>(), "");
+    }
+
+    {
+        ResultWrapper select_3 = execParams(connection, select_query, 2);
+        EXPECT_TRUE(select_3.valid());
+        EXPECT_EQ(select_3.rows(), 1);
+        EXPECT_EQ(select_3.getOnlyOne<std::string>(), "");
+    }
+}
+
 int main(int argc, char **argv)
 {
     testing::AddGlobalTestEnvironment(new DBCleaner);

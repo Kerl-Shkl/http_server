@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <netinet/in.h>
+#include <optional>
 #include <postgresql/libpq-fe.h>
 #include <stdexcept>
 #include <string>
@@ -97,6 +98,61 @@ struct ParamWrapper<int>
 
 private:
     int network_value;
+};
+
+template<typename T>
+struct ParamWrapper<std::optional<T>>
+{
+    ParamWrapper(std::optional<T>& v)
+    {
+        if (v.has_value()) {
+            opt.emplace(v.value());
+        }
+    }
+
+    ParamWrapper(std::optional<T>&& v)  // NOLINT Rvalue reference parameter 'v' is never moved
+    {
+        if (v.has_value()) {
+            opt.emplace(std::move(v.value()));
+        }
+    }
+
+    const char *pointer() const noexcept
+    {
+        return opt.has_value() ? opt->pointer() : nullptr;
+    }
+
+    int size() const noexcept
+    {
+        return opt.has_value() ? opt->size() : 0;
+    }
+
+    int format() const noexcept
+    {
+        return opt.has_value() ? opt->format() : static_cast<int>(ParamFormat::binary);
+    }
+
+private:
+    std::optional<ParamWrapper<T>> opt;
+};
+
+template<>
+struct ParamWrapper<std::nullopt_t>
+{
+    ParamWrapper(const std::nullopt_t& /*unused*/)
+    {}
+    const char *pointer() const noexcept
+    {
+        return nullptr;
+    }
+    int size() const noexcept
+    {
+        return 0;
+    }
+    int format() const noexcept
+    {
+        return static_cast<int>(ParamFormat::binary);
+    }
 };
 
 template<typename Tuple, typename Func, int n>
