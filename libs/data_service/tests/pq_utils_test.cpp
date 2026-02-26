@@ -1,7 +1,6 @@
 #include "pq_utils.hpp"
-#include "pq_database.hpp"
+#include "pq_connection.hpp"
 #include <gtest/gtest.h>
-#include <pqxx/pqxx>
 
 constexpr auto connection_string = "postgresql://kerl@/test_pq";
 
@@ -9,22 +8,22 @@ namespace {
 
 void clearTestDB()
 {
-    pqxx::connection connection{connection_string};
-    pqxx::work transaction{connection};
-    transaction.exec("DELETE FROM only_int;");
-    transaction.exec("DELETE FROM only_string;");
-    transaction.exec("DELETE FROM int_string;");
-    transaction.commit();
+    PQConnection connection{connection_string};
+    connection.connect();
+    connection.exec("DELETE FROM only_int;");
+    connection.exec("DELETE FROM only_string;");
+    connection.exec("DELETE FROM int_string;");
 }
 
 bool isDBClean()
 {
-    pqxx::connection connection{connection_string};
-    pqxx::work transaction{connection};
-    pqxx::row int_count = transaction.exec("SELECT COUNT(*) FROM only_int;").one_row();
-    pqxx::row string_count = transaction.exec("SELECT COUNT(*) FROM only_string;").one_row();
-    pqxx::row combo_count = transaction.exec("SELECT COUNT(*) FROM int_string;").one_row();
-    return int_count[0].as<int>() == 0 && string_count[0].as<int>() == 0 && combo_count[0].as<int>() == 0;
+    PQConnection connection{connection_string};
+    connection.connect();
+    ResultWrapper int_count = connection.exec("SELECT COUNT(*) FROM only_int;");
+    ResultWrapper string_count = connection.exec("SELECT COUNT(*) FROM only_string;");
+    ResultWrapper combo_count = connection.exec("SELECT COUNT(*) FROM int_string;");
+    return int_count.getOnlyOne<int>() == 0 && string_count.getOnlyOne<int>() == 0 &&
+           combo_count.getOnlyOne<int>() == 0;
 }
 
 }  // namespace
@@ -48,65 +47,56 @@ class TestUtils : public testing::Test
 protected:
     void SetUp() override
     {
-        connection = PQconnectdb(connection_string);
-        ASSERT_NE(connection, nullptr);
-        ASSERT_EQ(PQstatus(connection), CONNECTION_OK);
+        connection.connect();
+        ASSERT_TRUE(connection.connected());
     }
 
     void TearDown() override
     {
         clearTestDB();
-        PQfinish(connection);
     }
 
-    PGconn *connection{nullptr};
+    PQConnection connection{connection_string};
 };
 
 TEST_F(TestUtils, addInt)
 {
-    ResultWrapper res = execParams(connection, "INSERT INTO only_int VALUES ($1);", 7);
+    ResultWrapper res = connection.exec("INSERT INTO only_int VALUES ($1);", 7);
     EXPECT_TRUE(res.valid());
 
     // Validate
-    pqxx::connection xxconnection{connection_string};
-    pqxx::nontransaction action{xxconnection};
-    pqxx::result i = action.exec("SELECT * FROM only_int;");
-    EXPECT_EQ(i.size(), 1);
+    ResultWrapper i = connection.exec("SELECT * FROM only_int;");
+    EXPECT_EQ(i.rows(), 1);
     EXPECT_EQ(i.columns(), 1);
-    EXPECT_EQ(i.one_field().as<int>(), 7);
+    EXPECT_EQ(i.getOnlyOne<int>(), 7);
 }
 
 TEST_F(TestUtils, addCharPtr)
 {
     const char *test_str = "string literal";
 
-    ResultWrapper res = execParams(connection, "INSERT INTO only_string VALUES ($1);", test_str);
+    ResultWrapper res = connection.exec("INSERT INTO only_string VALUES ($1);", test_str);
     EXPECT_TRUE(res.valid());
 
     // Validate
-    pqxx::connection xxconnection{connection_string};
-    pqxx::nontransaction action{xxconnection};
-    pqxx::result i = action.exec("SELECT * FROM only_string;");
-    EXPECT_EQ(i.size(), 1);
+    ResultWrapper i = connection.exec("SELECT * FROM only_string;");
+    EXPECT_EQ(i.rows(), 1);
     EXPECT_EQ(i.columns(), 1);
-    EXPECT_EQ(i.one_field().as<std::string>(), std::string{test_str});
+    EXPECT_EQ(i.getOnlyOne<std::string>(), std::string{test_str});
 }
 
 TEST_F(TestUtils, addStr)
 {
     std::string test_str = "std string";
 
-    ResultWrapper res =
-        execParams(connection, "INSERT INTO only_string VALUES ($1);", test_str + " prvalue cast");
+    ResultWrapper res = connection.exec("INSERT INTO only_string VALUES ($1);", test_str + " prvalue cast");
     EXPECT_TRUE(res.valid());
 
     // Validate
-    pqxx::connection xxconnection{connection_string};
-    pqxx::nontransaction action{xxconnection};
-    pqxx::result i = action.exec("SELECT * FROM only_string;");
-    EXPECT_EQ(i.size(), 1);
+    ResultWrapper i = connection.exec("SELECT * FROM only_string;");
+    EXPECT_EQ(i.rows(), 1);
     EXPECT_EQ(i.columns(), 1);
-    EXPECT_EQ(i.one_field().as<std::string>(), test_str + " prvalue cast");
+    EXPECT_EQ(i.getOnlyOne<std::string>(), test_str + " prvalue cast");
 }
 
 TEST_F(TestUtils, addBoth)
@@ -114,26 +104,23 @@ TEST_F(TestUtils, addBoth)
     std::string test_str = "std string";
     int test_int = 42;
 
-    ResultWrapper res =
-        execParams(connection, "INSERT INTO int_string(i, s) VALUES ($1, $2);", test_int, test_str);
+    ResultWrapper res = connection.exec("INSERT INTO int_string(i, s) VALUES ($1, $2);", test_int, test_str);
     EXPECT_TRUE(res.valid());
 
     // Validate
-    pqxx::connection xxconnection{connection_string};
-    pqxx::nontransaction action{xxconnection};
-    pqxx::result r = action.exec("SELECT * FROM int_string;");
-    pqxx::row row = r.one_row();
-    EXPECT_EQ(row.size(), 2);
-    EXPECT_EQ(row.front().as<int>(), test_int);
-    EXPECT_EQ(row.back().as<std::string>(), test_str);
+    ResultWrapper r = connection.exec("SELECT * FROM int_string;");
+    EXPECT_EQ(r.rows(), 1);
+    EXPECT_EQ(r.columns(), 2);
+    EXPECT_EQ(r.get<int>(0, 0), test_int);
+    EXPECT_EQ(r.get<std::string>(0, 1), test_str);
 }
 
 TEST_F(TestUtils, getIntFromResult)
 {
-    ResultWrapper insert_result = execParams(connection, "INSERT INTO only_int VALUES ($1);", 7);
+    ResultWrapper insert_result = connection.exec("INSERT INTO only_int VALUES ($1);", 7);
     ASSERT_TRUE(insert_result.valid());
 
-    ResultWrapper select_res = execParams(connection, "SELECT i FROM only_int WHERE i = $1;", 7);
+    ResultWrapper select_res = connection.exec("SELECT i FROM only_int WHERE i = $1;", 7);
     ASSERT_TRUE(select_res.valid());
     EXPECT_EQ(select_res.rows(), 1);
     EXPECT_EQ(select_res.columns(), 1);
@@ -143,12 +130,10 @@ TEST_F(TestUtils, getIntFromResult)
 
 TEST_F(TestUtils, getStringFromResult)
 {
-    ResultWrapper insert_result =
-        execParams(connection, "INSERT INTO only_string VALUES ($1);", "Hello world");
+    ResultWrapper insert_result = connection.exec("INSERT INTO only_string VALUES ($1);", "Hello world");
     ASSERT_TRUE(insert_result.valid());
 
-    ResultWrapper select_res =
-        execParams(connection, "SELECT s FROM only_string WHERE s = $1;", "Hello world");
+    ResultWrapper select_res = connection.exec("SELECT s FROM only_string WHERE s = $1;", "Hello world");
     ASSERT_TRUE(select_res.valid());
     EXPECT_EQ(select_res.rows(), 1);
     EXPECT_EQ(select_res.columns(), 1);
@@ -158,13 +143,13 @@ TEST_F(TestUtils, getStringFromResult)
 
 TEST_F(TestUtils, incorrectQuery)
 {
-    ResultWrapper insert_result = execParams(connection, "INSERT INTO only_string VALUES ($1);", 1);
+    ResultWrapper insert_result = connection.exec("INSERT INTO only_string VALUES ($1);", 1);
     ASSERT_FALSE(insert_result.valid());
 }
 
 TEST_F(TestUtils, selectEmpty)
 {
-    ResultWrapper insert_result = execParams(connection, "SELECT * FROM only_string;");
+    ResultWrapper insert_result = connection.exec("SELECT * FROM only_string;");
     EXPECT_TRUE(insert_result.valid());
     EXPECT_EQ(insert_result.rows(), 0);
     EXPECT_TRUE(insert_result.empty());
@@ -175,10 +160,10 @@ TEST_F(TestUtils, selectTwoColumn)
     std::string test_str = "std string";
     int test_int = 42;
     ResultWrapper insert_res =
-        execParams(connection, "INSERT INTO int_string(i, s) VALUES ($1, $2);", test_int, test_str);
+        connection.exec("INSERT INTO int_string(i, s) VALUES ($1, $2);", test_int, test_str);
     ASSERT_TRUE(insert_res.valid());
 
-    ResultWrapper select_result = execParams(connection, "SELECT * FROM int_string;");
+    ResultWrapper select_result = connection.exec("SELECT * FROM int_string;");
     EXPECT_TRUE(select_result.valid());
     EXPECT_EQ(select_result.rows(), 1);
     EXPECT_EQ(select_result.columns(), 2);
@@ -192,33 +177,33 @@ TEST_F(TestUtils, insertNull)
     std::optional<std::string> null_opt_str;
     std::string query = "INSERT INTO int_string(i, s) VALUES ($1, $2);";
 
-    ResultWrapper insert_1 = execParams(connection, query, 0, std::optional<std::string>{test_str});
+    ResultWrapper insert_1 = connection.exec(query, 0, std::optional<std::string>{test_str});
     EXPECT_TRUE(insert_1.valid());
-    ResultWrapper insert_2 = execParams(connection, query, 1, null_opt_str);
+    ResultWrapper insert_2 = connection.exec(query, 1, null_opt_str);
     EXPECT_TRUE(insert_2.valid());
-    ResultWrapper insert_3 = execParams(connection, query, 2, std::nullopt);
+    ResultWrapper insert_3 = connection.exec(query, 2, std::nullopt);
     EXPECT_TRUE(insert_3.valid());
 
     std::string select_query = "SELECT s FROM int_string WHERE i=$1;";
     {
-        ResultWrapper select_1 = execParams(connection, select_query, 0);
-        EXPECT_TRUE(select_1.valid());
-        EXPECT_EQ(select_1.rows(), 1);
-        EXPECT_EQ(select_1.getOnlyOne<std::string>(), test_str);
+        ResultWrapper select_result = connection.exec(select_query, 0);
+        EXPECT_TRUE(select_result.valid());
+        EXPECT_EQ(select_result.rows(), 1);
+        EXPECT_EQ(select_result.getOnlyOne<std::string>(), test_str);
     }
 
     {
-        ResultWrapper select_2 = execParams(connection, select_query, 1);
-        EXPECT_TRUE(select_2.valid());
-        EXPECT_EQ(select_2.rows(), 1);
-        EXPECT_EQ(select_2.getOnlyOne<std::string>(), "");
+        ResultWrapper select_result = connection.exec(select_query, 1);
+        EXPECT_TRUE(select_result.valid());
+        EXPECT_EQ(select_result.rows(), 1);
+        EXPECT_EQ(select_result.getOnlyOne<std::string>(), "");
     }
 
     {
-        ResultWrapper select_3 = execParams(connection, select_query, 2);
-        EXPECT_TRUE(select_3.valid());
-        EXPECT_EQ(select_3.rows(), 1);
-        EXPECT_EQ(select_3.getOnlyOne<std::string>(), "");
+        ResultWrapper select_result = connection.exec(select_query, 2);
+        EXPECT_TRUE(select_result.valid());
+        EXPECT_EQ(select_result.rows(), 1);
+        EXPECT_EQ(select_result.getOnlyOne<std::string>(), "");
     }
 }
 

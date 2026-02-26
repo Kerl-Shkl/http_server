@@ -232,6 +232,11 @@ public:
         return status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK;
     }
 
+    ExecStatusType status() const noexcept
+    {
+        return PQresultStatus(result);
+    }
+
     template<typename T>
     T get(int row, int column);
 
