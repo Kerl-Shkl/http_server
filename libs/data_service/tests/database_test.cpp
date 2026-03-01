@@ -1,8 +1,8 @@
-#include "database.hpp"
+#include "pq_connection.hpp"
 #include "pq_database.hpp"
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <memory>
-#include <pqxx/pqxx>
 
 constexpr auto connection_string = "postgresql://kerl@/test_notes";
 constexpr auto section_name = "test section name";
@@ -15,21 +15,19 @@ namespace {
 
 void clearTestDB()
 {
-    pqxx::connection connection{connection_string};
-    pqxx::work transaction{connection};
-    transaction.exec("DELETE FROM notes WHERE name = '" + transaction.esc(note_name) + "';");
-    transaction.exec("DELETE FROM notes WHERE name = '" + transaction.esc(note_name2) + "';");
-    transaction.exec("DELETE FROM sections WHERE name = '" + transaction.esc(section_name) + "';");
-    transaction.commit();
+    PQConnection connection{connection_string};
+    connection.connect();
+    connection.exec("DELETE FROM notes WHERE name = $1 OR name = $2;", note_name, note_name2);
+    connection.exec("DELETE FROM sections WHERE name = $1;", section_name);
 }
 
 bool isDBClean()
 {
-    pqxx::connection connection{connection_string};
-    pqxx::work transaction{connection};
-    pqxx::row notes_count = transaction.exec("SELECT COUNT(*) FROM notes;").one_row();
-    pqxx::row sections_count = transaction.exec("SELECT COUNT(*) FROM sections;").one_row();
-    return notes_count[0].as<int>() == 0 && sections_count[0].as<int>() == 0;
+    PQConnection connection{connection_string};
+    connection.connect();
+    auto notes_count = connection.exec("SELECT COUNT(*) FROM notes;");
+    auto sections_count = connection.exec("SELECT COUNT(*) FROM sections;");
+    return notes_count.getOnlyOne<int>() == 0 && sections_count.getOnlyOne<int>() == 0;
 }
 
 }  // namespace
@@ -53,8 +51,7 @@ class TestDB : public testing::Test
 protected:
     void SetUp() override
     {
-        database = std::make_unique<DataBase>(connection_string);
-        // database = std::make_unique<PQDatabase>(connection_string);
+        database = std::make_unique<PostgresDB>(connection_string);
     }
 
     void TearDown() override
@@ -96,10 +93,8 @@ TEST_F(TestDB, addAndGetNote)
 {
     int note_id = database->addNote(note_name, note_body);
     auto body_by_id = database->getNote(note_id);
-    // auto body_by_name = database->getNote(note_name);
 
     EXPECT_EQ(note_body, body_by_id);
-    // EXPECT_EQ(note_body, body_by_name);
 }
 
 TEST_F(TestDB, getNonExistentNote)

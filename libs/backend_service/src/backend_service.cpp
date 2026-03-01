@@ -1,13 +1,13 @@
 #include "backend_service.hpp"
-#include "database.hpp"
 #include "logical_controller.hpp"
 #include "md4c-html.h"
 #include "permissions_controller.hpp"
+#include "pq_database.hpp"
 
 BackendService::BackendService()
 : permissions_controller(std::make_unique<PermissionsController>())
 {
-    database = std::make_unique<DataBase>("postgresql://kerl@/notes");
+    database = std::make_unique<PostgresDB>("postgresql://kerl@/notes");
     permissions_controller->startBotCommunication();
 }
 
@@ -27,11 +27,6 @@ void BackendService::init(std::shared_ptr<LogicalController> ctrl)
                 response.setStatus("OK");
                 response.setCode(200);
                 response.setBody("application/json", note_names.dump());
-            }
-            catch (const pqxx::failure& pex) {
-                logger.log("database error: ", pex.what());
-                response.setStatus("Internal Server Error");
-                response.setCode(500);
             }
             catch (const std::exception& ex) {
                 logger.log("error: ", ex.what());

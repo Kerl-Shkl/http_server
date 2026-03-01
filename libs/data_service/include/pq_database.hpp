@@ -1,80 +1,44 @@
 #pragma once
 
 #include "database_interface.hpp"
-#include "logger.hpp"
-#include "postgresql/libpq-fe.h"
 #include <cassert>
+#include <memory>
 
-class PQDatabase : public IDataBase
+class PQConnection;
+
+class PostgresDB : public IDataBase
 {
 public:
-    PQDatabase(std::string conn_string);
+    PostgresDB(std::string conn_string);
 
-    PQDatabase(const PQDatabase&) = default;
-    PQDatabase(PQDatabase&&) = delete;
-    PQDatabase& operator=(const PQDatabase&) = default;
-    PQDatabase& operator=(PQDatabase&&) = delete;
-    ~PQDatabase() override = default;
+    PostgresDB(const PostgresDB&) = delete;
+    PostgresDB(PostgresDB&&) = default;
+    PostgresDB& operator=(const PostgresDB&) = delete;
+    PostgresDB& operator=(PostgresDB&&) = delete;
+    ~PostgresDB() override;
 
-    int addSection(const std::string& section_name) override
-    {
-        return {};
-    }
-    void deleteSection(const std::string& section_name) override
-    {}
-    std::string getSection(int id) override
-    {
-        return {};
-    }
-    int getOrAddSection(const std::string& section_name) override
-    {
-        return {};
-    }
-    std::optional<int> getSectionIdByNote(int note_id) override
-    {
-        return {};
-    }
+    int addSection(const std::string& section_name) override;
+    void deleteSection(const std::string& section_name) override;
+    std::string getSection(int id) override;
+    int getOrAddSection(const std::string& section_name) override;
+    std::optional<int> getSectionIdByNote(int note_id) override;
 
     int addNote(const std::string& name, const std::string& body) override;
-    void deleteNote(const std::string& name) override
-    {}
-    void deleteNote(int id) override
-    {}
+    void deleteNote(const std::string& name) override;
+    void deleteNote(int id) override;
 
-    std::string getNote(const std::string& name) override
-    {
-        return {};
-    }
+    std::string getNote(const std::string& name) override;
     std::string getNote(int id) override;
-    std::pair<std::string, std::string> getNoteWithName(int id) override
-    {
-        return {};
-    }
-    std::string getNoteName(int id) override
-    {
-        return {};
-    }
+    std::pair<std::string, std::string> getNoteWithName(int id) override;
+    std::string getNoteName(int id) override;
 
-    int addNote(const std::string& name, const std::string& body, const std::string& section_name) override
-    {
-        return {};
-    }
-    int addNote(const std::string& name, const std::string& body, int section_id) override
-    {
-        return {};
-    }
+    int addNote(const std::string& name, const std::string& body, const std::string& section_name) override;
+    int addNote(const std::string& name, const std::string& body, int section_id) override;
 
-    std::vector<std::pair<int, std::string>> getAllNoteNames() override
-    {
-        return {};
-    }
+    std::vector<std::pair<int, std::string>> getAllNoteNames() override;
 
 private:
-    void connect() noexcept;
-    bool isConnected() const noexcept;
+    int doAddNote(const std::string& name, const std::string& body, std::optional<int> section_id);
 
-    std::string connection_string;
-    PGconn *connection{nullptr};
-
-    Logger logger{"pq_db"};
+    std::unique_ptr<PQConnection> connection;
 };

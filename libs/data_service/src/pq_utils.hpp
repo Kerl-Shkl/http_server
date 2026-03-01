@@ -20,7 +20,7 @@ struct ParamWrapper;
 template<>
 struct ParamWrapper<std::string>
 {
-    ParamWrapper(std::string& s)
+    ParamWrapper(const std::string& s)
     : ref_s{s}
     {}
 
@@ -44,7 +44,7 @@ struct ParamWrapper<std::string>
     }
 
 private:
-    std::string& ref_s;
+    const std::string& ref_s;
 };
 
 template<typename T> concept cstr_concept = std::is_convertible_v<T, const char *>;
