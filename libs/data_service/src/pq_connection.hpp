@@ -25,23 +25,23 @@ public:
     PQConnection& operator=(const PQConnection&) = delete;
     PQConnection& operator=(PQConnection&&) = delete;
 
-    void connect()
+    void connect() noexcept
     {
         connection = PQconnectdb(connection_string.c_str());
         assert(connection != nullptr);
     }
 
-    void disconnect()
+    void disconnect() noexcept
     {
         PQfinish(connection);
     }
 
-    bool connected()
+    bool connected() const noexcept
     {
         return PQstatus(connection) == CONNECTION_OK;
     }
 
-    void reconnect()
+    void reconnect() noexcept
     {
         PQreset(connection);
     }
@@ -52,7 +52,7 @@ public:
         return execParams(connection, query, std::forward<Args>(args)...);
     }
 
-    bool transactionReady()
+    bool transactionReady() const noexcept
     {
         return PQtransactionStatus(connection) == PQTRANS_IDLE;
     }

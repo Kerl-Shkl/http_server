@@ -207,6 +207,37 @@ TEST_F(TestUtils, insertNull)
     }
 }
 
+TEST_F(TestUtils, TransactionCommit)
+{
+    ASSERT_TRUE(connection.transactionReady());
+    connection.beginTransaction();
+
+    EXPECT_FALSE(connection.transactionReady());
+    ResultWrapper insert_result = connection.exec("INSERT INTO only_int VALUES ($1);", 7);
+    ASSERT_TRUE(insert_result.valid());
+
+    connection.commitTransaction();
+
+    ResultWrapper select_res = connection.exec("SELECT i FROM only_int WHERE i = $1;", 7);
+    ASSERT_TRUE(select_res.valid());
+    EXPECT_EQ(select_res.getOnlyOne<int>(), 7);
+}
+
+TEST_F(TestUtils, TransactionRollback)
+{
+    ASSERT_TRUE(connection.transactionReady());
+    connection.beginTransaction();
+
+    ResultWrapper insert_result = connection.exec("INSERT INTO only_int VALUES ($1);", 7);
+    ASSERT_TRUE(insert_result.valid());
+
+    connection.rollbackTransaction();
+
+    ResultWrapper select_res = connection.exec("SELECT i FROM only_int WHERE i = $1;", 7);
+    ASSERT_TRUE(select_res.valid());
+    EXPECT_TRUE(select_res.empty());
+}
+
 int main(int argc, char **argv)
 {
     testing::AddGlobalTestEnvironment(new DBCleaner);
